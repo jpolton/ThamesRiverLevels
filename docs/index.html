@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>River Level Monitor</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .station-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .station-card:active {
+            transform: scale(0.98);
+        }
+
+        .station-card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .station-card.active {
+            border: 3px solid #667eea;
+            background: #f0f4ff;
+        }
+
+        .station-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .station-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .source-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .station-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .station-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-top: 2px;
+        }
+
+        .stat-value.unit {
+            font-size: 14px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        #plot {
+            width: 100%;
+            height: 400px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .refresh-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:active {
+            background: #5568d3;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 24px;
+            }
+
+            .stations-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .station-card {
+                padding: 12px;
+            }
+
+            .station-name {
+                font-size: 18px;
+            }
+
+            #plot {
+                height: 300px;
+            }
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
+
+            header {
+                padding-left: max(15px, env(safe-area-inset-left));
+                padding-right: max(15px, env(safe-area-inset-right));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>River Level Monitor</h1>
+            <p>Real-time water level monitoring for Dee and surrounding areas</p>
+        </header>
+
+        <div class="stations-grid" id="stationsGrid"></div>
+
+        <div class="chart-container">
+            <div id="plot"></div>
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="refresh-btn" onclick="location.reload()">Refresh Page</button>
+                <button class="refresh-btn" onclick="loadAllData()">Compare All</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STATIONS = {{ stations | tojson }};
+        let selectedStation = 'chester';
+
+        function formatTime(dateString) {
+            return new Date(dateString).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: '2-digit'
+            });
+        }
+
+        function createStationCard(key, station) {
+            return `
+                <div class="station-card ${key === selectedStation ? 'active' : ''}" 
+                     onclick="selectStation('${key}')">
+                    <div class="station-header">
+                        <span class="station-name">${station.name}</span>
+                        <span class="source-badge">${station.source}</span>
+                    </div>
+                    <p class="station-description">${station.description}</p>
+                    <div class="station-stats">
+                        <div class="stat">
+                            <div class="stat-label">Current</div>
+                            <div class="stat-value" id="stat-current-${key}">--</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Range</div>
+                            <div class="stat-value" id="stat-range-${key}">--</div>
+                        </div>
+                    </div>
+                    <div id="error-${key}"></div>
+                </div>
+            `;
+        }
+
+        function initializeStations() {
+            const grid = document.getElementById('stationsGrid');
+            grid.innerHTML = Object.entries(STATIONS)
+                .map(([key, station]) => createStationCard(key, station))
+                .join('');
+        }
+
+        function selectStation(stationKey) {
+            selectedStation = stationKey;
+            document.querySelectorAll('.station-card').forEach((card, idx) => {
+                card.classList.toggle('active', 
+                    card === document.querySelectorAll('.station-card')[Object.keys(STATIONS).indexOf(stationKey)]);
+            });
+            loadStationData();
+        }
+
+        async function loadStationData() {
+            const url = `/api/station/${selectedStation}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    displayError(selectedStation, data.error);
+                    plotError(data.error);
+                    return;
+                }
+
+                // Update stats
+                if (data.stats) {
+                    const lastValue = data.readings[data.readings.length - 1]?.value || 0;
+                    document.getElementById(`stat-current-${selectedStation}`).textContent = 
+                        lastValue.toFixed(2) + ' m';
+                    document.getElementById(`stat-range-${selectedStation}`).textContent = 
+                        `${data.stats.min.toFixed(2)} - ${data.stats.max.toFixed(2)} m`;
+                }
+
+                // Clear error message if exists
+                const errorDiv = document.getElementById(`error-${selectedStation}`);
+                if (errorDiv) errorDiv.innerHTML = '';
+
+                // Plot data
+                plotData(data);
+
+            } catch (error) {
+                displayError(selectedStation, error.message);
+                plotError(error.message);
+            }
+        }
+
+        function displayError(stationKey, message) {
+            const errorDiv = document.getElementById(`error-${stationKey}`);
+            if (errorDiv) {
+                errorDiv.innerHTML = `<div class="error-message">${message}</div>`;
+            }
+        }
+
+        function plotData(data) {
+            const times = data.readings.map(r => new Date(r.dateTime));
+            const values = data.readings.map(r => r.value);
+
+            const trace = {
+                x: times,
+                y: values,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: data.station.name,
+                line: {
+                    color: '#667eea',
+                    width: 2
+                },
+                marker: {
+                    size: 5,
+                    color: '#667eea'
+                },
+                fill: 'tozeroy',
+                fillcolor: 'rgba(102, 126, 234, 0.1)'
+            };
+
+            const layout = {
+                title: `${data.station.name} - Water Level (Today)`,
+                xaxis: {
+                    title: 'Time',
+                    type: 'date'
+                },
+                yaxis: {
+                    title: 'Water Level (meters)',
+                    zeroline: false
+                },
+                plot_bgcolor: '#f8f9fa',
+                paper_bgcolor: 'white',
+                margin: {
+                    l: 60,
+                    r: 40,
+                    t: 50,
+                    b: 60
+                },
+                hovermode: 'x unified',
+                responsive: true
+            };
+
+            Plotly.newPlot('plot', [trace], layout, {responsive: true});
+        }
+
+        function plotError(message) {
+            document.getElementById('plot').innerHTML = 
+                `<div style="padding: 40px; text-align: center; color: #c62828;">
+                    <p>Unable to load chart: ${message}</p>
+                </div>`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeStations();
+            loadStationData();
+        });
+
+        // Auto-refresh every 5 minutes
+        setInterval(loadStationData, 5 * 60 * 1000);
+
+        // Fetch and plot all station series on one graph
+        async function loadAllData() {
+            const url = `/api/all`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const colors = ['#667eea', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'];
+                const traces = [];
+
+                let idx = 0;
+                // Explicit plotting order: Chester, Ironbridge, Farndon, Liverpool
+                const desiredOrder = ['chester', 'ironbridge', 'farndon', 'liverpool'];
+                for (const key of desiredOrder) {
+                    const stationData = data[key];
+                    if (!stationData || !stationData.readings || stationData.readings.length === 0) continue;
+                    const times = stationData.readings.map(r => new Date(r.dateTime));
+                    const values = stationData.readings.map(r => r.value);
+
+                    traces.push({
+                        x: times,
+                        y: values,
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        name: stationData.station.name,
+                        line: { color: colors[idx % colors.length], width: 2 },
+                        marker: { size: 4, color: colors[idx % colors.length] }
+                    });
+                    idx += 1;
+                }
+
+                if (traces.length === 0) {
+                    plotError('No station data available for comparison');
+                    return;
+                }
+
+                const layout = {
+                    title: `All Stations - Water Level (Today)` ,
+                    xaxis: { title: 'Time', type: 'date' },
+                    yaxis: { title: 'Water Level (meters)', zeroline: false },
+                    plot_bgcolor: '#f8f9fa',
+                    paper_bgcolor: 'white',
+                    margin: { l: 60, r: 40, t: 50, b: 60 },
+                    hovermode: 'x unified',
+                    responsive: true
+                };
+
+                Plotly.newPlot('plot', traces, layout, {responsive: true});
+
+            } catch (error) {
+                plotError(error.message || String(error));
+            }
+        }
+    </script>
+</body>
+</html>
