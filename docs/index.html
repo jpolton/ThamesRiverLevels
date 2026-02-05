@@ -225,16 +225,49 @@
 
         <div class="chart-container">
             <div id="plot"></div>
-            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="refresh-btn" onclick="location.reload()">Refresh Page</button>
-                <button class="refresh-btn" onclick="loadAllData()">Compare All</button>
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <span style="color:#333; font-weight:600; margin-right:6px;">Range:</span>
+                    <button class="refresh-btn" id="btn-1d" onclick="setRange(1)">1 day</button>
+                    <button class="refresh-btn" id="btn-2d" onclick="setRange(2)">2 days</button>
+                    <button class="refresh-btn" id="btn-7d" onclick="setRange(7)">7 days</button>
+                </div>
+                <div style="margin-left:12px; display:flex; gap:8px;">
+                    <button class="refresh-btn" onclick="location.reload()">Show All</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const STATIONS = {{ stations | tojson }};
+        // order used for comparative plots
+        const DESIRED_ORDER = ['chester','ironbridge','farndon','liverpool','queens_park'];
         let selectedStation = 'chester';
+        let currentNdDays = 1; // default range
+        let currentView = 'compare'; // 'compare' or 'single'
+        // which stations are visible in compare view (legendonly for others)
+        let visibleStations = ['chester'];
+
+        function updateVisibleStationsFromPlot() {
+            const gd = document.getElementById('plot');
+            if (!gd || !gd.data) return;
+            // Map traces back to DESIRED_ORDER by name matching if possible
+            const newVisible = [];
+            for (let i = 0; i < gd.data.length; i++) {
+                const d = gd.data[i];
+                // determine key: prefer explicit customdata set on traces
+                const key = (d.customdata && d.customdata[0]) || Object.keys(STATIONS).find(k => STATIONS[k].name === d.name) || DESIRED_ORDER[i] || null;
+                if (!key) continue;
+                if (d.visible === true || d.visible === undefined) {
+                    newVisible.push(key);
+                }
+            }
+            if (newVisible.length > 0) {
+                visibleStations = newVisible;
+                console.log('Visible stations:', visibleStations);
+            }
+        }
 
         function formatTime(dateString) {
             return new Date(dateString).toLocaleTimeString('en-US', {
@@ -285,6 +318,7 @@
 
         function selectStation(stationKey) {
             selectedStation = stationKey;
+            currentView = 'single';
             document.querySelectorAll('.station-card').forEach((card, idx) => {
                 card.classList.toggle('active', 
                     card === document.querySelectorAll('.station-card')[Object.keys(STATIONS).indexOf(stationKey)]);
@@ -293,7 +327,7 @@
         }
 
         async function loadStationData() {
-            const url = `/api/station/${selectedStation}`;
+            const url = `/api/station/${selectedStation}?ndays=${currentNdDays}`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -345,7 +379,8 @@
                 name: data.station.name,
                 line: {
                     color: '#667eea',
-                    width: 2
+                    width: 2,
+                    shape: 'spline'
                 },
                 marker: {
                     size: 5,
@@ -355,15 +390,16 @@
                 fillcolor: 'rgba(102, 126, 234, 0.1)'
             };
 
+            const isQueensPark = selectedStation === 'queens_park';
+            if (isQueensPark) {
+                trace.yaxis = 'y2';
+            }
+
             const layout = {
-                title: `${data.station.name} - Water Level (Today)`,
+                title: `${data.station.name} - Water Level (last ${currentNdDays} day${currentNdDays>1? 's':''})`,
                 xaxis: {
                     title: 'Time',
                     type: 'date'
-                },
-                yaxis: {
-                    title: 'Water Level (meters)',
-                    zeroline: false
                 },
                 plot_bgcolor: '#f8f9fa',
                 paper_bgcolor: 'white',
@@ -374,10 +410,53 @@
                     b: 60
                 },
                 hovermode: 'x unified',
-                responsive: true
+                    responsive: true,
+                    legend: {
+                        x: 0.02,
+                        y: 0.98,
+                        xanchor: 'left',
+                        yanchor: 'top',
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        bordercolor: '#cccccc',
+                        borderwidth: 1
+                    }
             };
 
+            if (isQueensPark) {
+                layout.yaxis2 = {
+                    title: 'Groundwater Level (meters)',
+                    zeroline: false,
+                    autorange: 'reversed'
+                };
+            } else {
+                layout.yaxis = {
+                    title: 'Water Level (meters)',
+                    zeroline: false
+                };
+            }
+
             Plotly.newPlot('plot', [trace], layout, {responsive: true});
+        }
+
+        function updateRangeButtonsVisual(ndays) {
+            ['1','2','7'].forEach(s => {
+                const btn = document.getElementById(`btn-${s}d`);
+                if (!btn) return;
+                btn.style.opacity = (parseInt(s) === ndays) ? '1' : '0.7';
+                btn.style.boxShadow = (parseInt(s) === ndays) ? '0 6px 20px rgba(0,0,0,0.15)' : 'none';
+            });
+        }
+
+        function setRange(ndays) {
+            currentNdDays = ndays;
+            // update active button styling
+            updateRangeButtonsVisual(ndays);
+            // reload according to current view
+            if (currentView === 'single') {
+                loadStationData();
+            } else {
+                loadDefaultComparison();
+            }
         }
 
         function plotError(message) {
@@ -390,7 +469,11 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initializeStations();
-            loadStationData();
+            // set initial active button visuals (no single-station load)
+            updateRangeButtonsVisual(currentNdDays);
+            currentView = 'compare';
+            // show default comparison view (same layout as Compare All but only Chester)
+            loadDefaultComparison();
         });
 
         // Auto-refresh every 5 minutes
@@ -398,7 +481,7 @@
 
         // Fetch and plot all station series on one graph
         async function loadAllData() {
-            const url = `/api/all`;
+            const url = `/api/all?ndays=${currentNdDays}`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -411,19 +494,33 @@
                 const desiredOrder = ['chester', 'ironbridge', 'farndon', 'liverpool','queens_park'];
                 for (const key of desiredOrder) {
                     const stationData = data[key];
-                    if (!stationData || !stationData.readings || stationData.readings.length === 0) continue;
-                    const times = stationData.readings.map(r => new Date(r.dateTime));
-                    const values = stationData.readings.map(r => r.value);
+                    if (!stationData) {
+                        // add placeholder trace to keep legend entry
+                        traces.push({ x: [], y: [], type: 'scatter', mode: 'lines', name: key, customdata: [key], visible: visibleStations.includes(key) ? true : 'legendonly' });
+                        idx += 1;
+                        continue;
+                    }
+                    const times = (stationData.readings || []).map(r => new Date(r.dateTime));
+                    const values = (stationData.readings || []).map(r => r.value);
 
-                    traces.push({
+                    const trace = {
                         x: times,
                         y: values,
                         type: 'scatter',
                         mode: 'lines+markers',
                         name: stationData.station.name,
-                        line: { color: colors[idx % colors.length], width: 2 },
-                        marker: { size: 4, color: colors[idx % colors.length] }
-                    });
+                        customdata: [key],
+                        line: { color: colors[idx % colors.length], width: 2, shape: 'spline' },
+                        marker: { size: 4, color: colors[idx % colors.length] },
+                        visible: visibleStations.includes(key) ? true : 'legendonly'
+                    };
+
+                    // Use secondary y-axis for queens_park (groundwater level)
+                    if (key === 'queens_park') {
+                        trace.yaxis = 'y2';
+                    }
+
+                    traces.push(trace);
                     idx += 1;
                 }
 
@@ -433,22 +530,133 @@
                 }
 
                 const layout = {
-                    title: `All Stations - Water Level (Today)` ,
+                    title: `All Stations - Water Level (last ${currentNdDays} day${currentNdDays>1? 's':''})` ,
                     xaxis: { title: 'Time', type: 'date' },
                     yaxis: { title: 'Water Level (meters)', zeroline: false },
+                    yaxis2: { 
+                        title: 'Groundwater Level (meters)', 
+                        overlaying: 'y',
+                        side: 'right',
+                        zeroline: false,
+                        autorange: 'reversed'
+                    },
                     plot_bgcolor: '#f8f9fa',
                     paper_bgcolor: 'white',
-                    margin: { l: 60, r: 40, t: 50, b: 60 },
+                    margin: { l: 60, r: 60, t: 50, b: 60 },
                     hovermode: 'x unified',
-                    responsive: true
+                    responsive: true,
+                    legend: {
+                        x: 0.02,
+                        y: 0.98,
+                        xanchor: 'left',
+                        yanchor: 'top',
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        bordercolor: '#cccccc',
+                        borderwidth: 1
+                    }
                 };
 
-                Plotly.newPlot('plot', traces, layout, {responsive: true});
+                const gd = document.getElementById('plot');
+                Plotly.newPlot(gd, traces, layout, {responsive: true}).then(() => {
+                    // attach legend click handler to track visibility changes
+                    // track visibility changes after Plotly restyles (legend toggles)
+                    gd.on('plotly_restyle', function(evt, data) {
+                        updateVisibleStationsFromPlot();
+                    });
+                    // also capture initial state
+                    updateVisibleStationsFromPlot();
+                });
 
             } catch (error) {
                 plotError(error.message || String(error));
             }
         }
+
+                // Default comparison: same as loadAllData but only show Chester
+                async function loadDefaultComparison() {
+                    const url = `/api/all?ndays=${currentNdDays}`;
+                    try {
+                        const response = await fetch(url);
+                        const data = await response.json();
+
+                        const colors = ['#667eea', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'];
+                        const traces = [];
+
+                        // Build traces for all stations; respect previously visible stations
+                        const desiredOrder = ['chester', 'ironbridge', 'farndon', 'liverpool', 'queens_park'];
+                        let idx = 0;
+                        for (const key of desiredOrder) {
+                            const stationData = data[key];
+                            // create entries for legend even if no readings
+                            if (!stationData) {
+                                // add an empty trace so the station appears in the legend
+                                traces.push({ x: [], y: [], type: 'scatter', mode: 'lines', name: (STATIONS[key] && STATIONS[key].name) || key, customdata: [key], visible: visibleStations.includes(key) ? true : 'legendonly' });
+                                idx += 1;
+                                continue;
+                            }
+                            const times = (stationData.readings || []).map(r => new Date(r.dateTime));
+                            const values = (stationData.readings || []).map(r => r.value);
+
+                            const trace = {
+                                x: times,
+                                y: values,
+                                type: 'scatter',
+                                mode: 'lines+markers',
+                                name: stationData.station.name,
+                                customdata: [key],
+                                line: { color: colors[idx % colors.length], width: 2, shape: 'spline' },
+                                marker: { size: 4, color: colors[idx % colors.length] },
+                                visible: visibleStations.includes(key) ? true : 'legendonly'
+                            };
+
+                            // Use secondary axis for queens_park
+                            if (key === 'queens_park') {
+                                trace.yaxis = 'y2';
+                            }
+
+                            traces.push(trace);
+                            idx += 1;
+                        }
+
+                        if (traces.length === 0) {
+                            plotError('No station data available for comparison');
+                            return;
+                        }
+
+                        const layout = {
+                            title: `All Stations - Water Level (last ${currentNdDays} day${currentNdDays>1? 's':''})` ,
+                            xaxis: { title: 'Time', type: 'date' },
+                            yaxis: { title: 'Water Level (meters)', zeroline: false },
+                            yaxis2: { title: 'Groundwater Level (meters)', overlaying: 'y', side: 'right', zeroline: false, autorange: 'reversed' },
+                            plot_bgcolor: '#f8f9fa',
+                            paper_bgcolor: 'white',
+                            margin: { l: 60, r: 60, t: 50, b: 60 },
+                            hovermode: 'x unified',
+                            responsive: true,
+                            legend: {
+                                x: 0.02,
+                                y: 0.98,
+                                xanchor: 'left',
+                                yanchor: 'top',
+                                bgcolor: 'rgba(255,255,255,0.9)',
+                                bordercolor: '#cccccc',
+                                borderwidth: 1
+                            }
+                        };
+
+                        const gd = document.getElementById('plot');
+                        Plotly.newPlot(gd, traces, layout, {responsive: true}).then(() => {
+                            // track visibility changes after plot restyles (legend toggles)
+                            gd.on('plotly_restyle', function(evt, data) {
+                                updateVisibleStationsFromPlot();
+                            });
+                            updateVisibleStationsFromPlot();
+                        });
+
+                    } catch (error) {
+                        plotError(error.message || String(error));
+                    }
+                }
     </script>
 </body>
 </html>

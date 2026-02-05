@@ -64,11 +64,26 @@ STATIONS = {
 }
 
 
-def fetch_station_data(station_id: str) -> dict:
-    """Fetch readings from Environment Agency flood monitoring API."""
+def fetch_station_data(station_id: str, ndays: int = 1) -> dict:
+    """Fetch readings from Environment Agency flood monitoring API, for the last `ndays` days"""
     url = f"https://environment.data.gov.uk/flood-monitoring/id/stations/{station_id}/readings"
-    params = {"today": ""}
-    
+    #if ndays == 1:
+    #    params = {"today": ""}
+    #else:
+    date_end = np.datetime64('now')
+    # subtract ndays days from date_end
+    date_start = date_end - np.timedelta64(int(ndays), 'D')
+
+    # Add 1 day to end date to ensure we capture all data through the current day
+    date_end_inclusive = date_end + np.timedelta64(1, 'D')
+
+    py_dt_start = date_start.astype('datetime64[ms]').item()   # convert to Python datetime
+    py_dt_end = date_end.astype('datetime64[ms]').item()
+    print(py_dt_start.strftime('%Y-%m-%dT%H:%M:%SZ'))
+    print(py_dt_end.strftime('%Y-%m-%dT%H:%M:%SZ'))
+    # Use full ISO timestamp for enddate to capture all available data
+    #params = {"startdate": py_dt_start.strftime('%Y-%m-%d'), "enddate": py_dt_end.strftime('%Y-%m-%d')}
+    params = {"since": py_dt_start.strftime('%Y-%m-%dT00:00:00Z'), "_limit": 800}
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -108,21 +123,20 @@ def get_shoothill_datatype(station_id: str) -> int:
     return 3  # Default fallback
 
 
-def fetch_shoothill_data(station_id: str) -> dict:
-    """Fetch readings from Shoothill API."""
+def fetch_shoothill_data(station_id: str, ndays: int = 1) -> dict:
+    """Fetch readings from Shoothill API for the last `ndays` days."""
     if GAUGE is None:
         return None
-    
+
     try:
-        ndays = 1
+        # Use ndays to compute date_start (inclusive) and date_end (now)
         date_end = np.datetime64('now')
-        date_start = np.datetime64(datetime.now().date().isoformat())
-        #date_start = np.datetime64(datetime.utcnow().date().isoformat())
-        #date_start = date_end - np.timedelta64(ndays, 'D')
-        
+        # subtract ndays days from date_end
+        date_start = date_end - np.timedelta64(int(ndays), 'D')
+
         # Get the correct dataType for this station
         dataType = get_shoothill_datatype(station_id)
-        
+
         gauge = GAUGE()
         dataset = gauge.read_shoothill_to_xarray(
             station_id=station_id,
@@ -189,7 +203,7 @@ def parse_shoothill_data(dataset) -> list:
     return readings
 
 
-def get_station_data(station_key: str) -> dict:
+def get_station_data(station_key: str, ndays: int = 1) -> dict:
     """Fetch and format data for a specific station."""
     if station_key not in STATIONS:
         return {"error": "Station not found"}
@@ -198,7 +212,7 @@ def get_station_data(station_key: str) -> dict:
     
     try:
         if station["source"] == "EA":
-            data = fetch_station_data(station["id"])
+            data = fetch_station_data(station["id"], ndays=ndays)
             readings = [
                 {
                     "dateTime": item["dateTime"],
@@ -207,7 +221,7 @@ def get_station_data(station_key: str) -> dict:
                 for item in data.get("items", [])
             ]
         else:  # Shoothill
-            dataset = fetch_shoothill_data(station["id"])
+            dataset = fetch_shoothill_data(station["id"], ndays=ndays)
             readings = parse_shoothill_data(dataset)
         
         if not readings:
@@ -274,7 +288,14 @@ def index():
 @app.route("/api/station/<station_key>")
 def api_station(station_key):
     """API endpoint for station data."""
-    data = get_station_data(station_key)
+    # allow client to request last N days via ?ndays=
+    try:
+        ndays = int(request.args.get('ndays', 1))
+        if ndays < 1:
+            ndays = 1
+    except Exception:
+        ndays = 1
+    data = get_station_data(station_key, ndays=ndays)
     return jsonify(data)
 
 
@@ -282,8 +303,15 @@ def api_station(station_key):
 def api_all():
     """API endpoint for all stations data."""
     all_data = {}
+    # allow a common ndays parameter for all stations
+    try:
+        ndays = int(request.args.get('ndays', 1))
+        if ndays < 1:
+            ndays = 1
+    except Exception:
+        ndays = 1
     for station_key in STATIONS.keys():
-        all_data[station_key] = get_station_data(station_key)
+        all_data[station_key] = get_station_data(station_key, ndays=ndays)
     return jsonify(all_data)
 
 

@@ -559,7 +559,7 @@ class GAUGE(coast.Tidegauge):
         time = []
         sea_level = []
         nvals = len(request['values'])
-        time = np.array([np.datetime64(request['values'][i]['time']) for i in range(nvals)])
+        time = np.array([np.datetime64(request['values'][i]['time'], 'ns') for i in range(nvals)])
         sea_level = np.array([request['values'][i]['value'] for i in range(nvals)])
 
         #%% Assign arrays to Dataset
