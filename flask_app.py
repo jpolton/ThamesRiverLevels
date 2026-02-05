@@ -1,5 +1,9 @@
 """
 Flask web app for river water level monitoring.
+
+conda actiavate weir_waterlevel_web_env
+python flask_app.py
+
 Access at http://localhost:5000 in your browser.
 """
 
