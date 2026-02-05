@@ -1,3 +1,5 @@
 */*/*.pyc
 shoothill_api/config_keys.py
-config_keys.py 
+config_keys.py
+shoothill_api.cpython*.pyc
+config_keys.cpython*.pyc
