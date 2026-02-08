@@ -28,7 +28,7 @@ jobs:
           OUT_DIR: docs/data
           NDAYS: "7"
           # Add API keys as needed via repository "Actions secrets"
-          # e.g., SHOOTHILL_KEY: ${{ secrets.SHOOTHILL_KEY }}
+          SHOOTHILL_KEY: ${{ secrets.SHOOTHILL_KEY }}
         run: |
           python scripts/fetch_to_json.py
 
