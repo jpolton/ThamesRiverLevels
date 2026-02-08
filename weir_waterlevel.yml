@@ -30,6 +30,7 @@ dependencies:
   - aiohttp==3.11.13
   - PyYAML==5.4.1
   - oyaml==1.0
+  - plotly=6.5.2
   - pip
   - pip:
     - Flask==3.0.0
