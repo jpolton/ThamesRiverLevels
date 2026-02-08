@@ -1,662 +1,252 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>River Level Monitor</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 10px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 20px;
-            padding: 15px;
-        }
-
-        header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-
-        header p {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .stations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .station-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .station-card:active {
-            transform: scale(0.98);
-        }
-
-        .station-card:hover {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .station-card.active {
-            border: 3px solid #667eea;
-            background: #f0f4ff;
-        }
-
-        .station-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .station-name {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .source-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .station-description {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .station-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .stat {
-            background: #f5f5f5;
-            padding: 8px;
-            border-radius: 6px;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #666;
-            text-transform: uppercase;
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-top: 2px;
-        }
-
-        .stat-value.unit {
-            font-size: 14px;
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
-
-        #plot {
-            width: 100%;
-            height: 400px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: white;
-            font-size: 16px;
-        }
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-size: 13px;
-        }
-
-        .refresh-btn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .refresh-btn:active {
-            background: #5568d3;
-        }
-
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 24px;
-            }
-
-            .stations-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .station-card {
-                padding: 12px;
-            }
-
-            .station-name {
-                font-size: 18px;
-            }
-
-            #plot {
-                height: 300px;
-            }
-        }
-
-        @supports (padding: max(0px)) {
-            body {
-                padding-left: max(10px, env(safe-area-inset-left));
-                padding-right: max(10px, env(safe-area-inset-right));
-                padding-bottom: max(10px, env(safe-area-inset-bottom));
-            }
-
-            header {
-                padding-left: max(15px, env(safe-area-inset-left));
-                padding-right: max(15px, env(safe-area-inset-right));
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>River Levels — Last 7 Days (UTC)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Plotly.js (pin an explicit version) -->
+  <script/cdn.plot.ly/plotly-3.3.1.min.js</script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --fg: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+    }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: var(--bg); color: var(--fg);
+      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    }
+    header {
+      padding: 16px;
+      border-bottom: 1px solid #1f2937;
+      background: #0b1220;
+    }
+    h1 { margin: 0 0 4px 0; font-weight: 600; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .container {
+      display: grid; grid-template-columns: 280px 1fr; gap: 16px;
+      height: calc(100% - 72px); /* minus header */
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .panel {
+      background: var(--panel); border: 1px solid #1f2937; border-radius: 12px; padding: 12px;
+    }
+    .controls label { display: block; margin: 10px 0 6px; font-weight: 600; }
+    .stations { display: grid; grid-template-columns: 1fr; gap: 6px; max-height: 38vh; overflow: auto; }
+    .stations .row { display: flex; align-items: center; gap: 8px; }
+    .stations input { transform: scale(1.1); }
+    .time-range { display: flex; gap: 8px; flex-wrap: wrap; }
+    .time-range input { margin-right: 6px; }
+    button {
+      background: var(--accent); color: #0b1220; border: none; border-radius: 8px; padding: 8px 12px;
+      font-weight: 600; cursor: pointer;
+    }
+    button.secondary { background: #1f2937; color: var(--fg); }
+    #chart { height: calc(100vh - 160px); min-height: 420px; }
+    footer { padding: 8px 16px; color: var(--muted); }
+    a { color: #93c5fd; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>River Level Monitor</h1>
-            <p>Real-time water level monitoring for Dee and surrounding areas</p>
-        </header>
-
-        <div class="stations-grid" id="stationsGrid"></div>
-
-        <div class="chart-container">
-            <div id="plot"></div>
-            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                <div style="display:flex; gap:6px; align-items:center;">
-                    <span style="color:#333; font-weight:600; margin-right:6px;">Range:</span>
-                    <button class="refresh-btn" id="btn-1d" onclick="setRange(1)">1 day</button>
-                    <button class="refresh-btn" id="btn-2d" onclick="setRange(2)">2 days</button>
-                    <button class="refresh-btn" id="btn-7d" onclick="setRange(7)">7 days</button>
-                </div>
-                <div style="margin-left:12px; display:flex; gap:8px;">
-                    <button class="refresh-btn" onclick="location.reload()">Show All</button>
-                </div>
-            </div>
-        </div>
+  <header>
+    <h1>River Water Levels — Last 7 Days</h1>
+    <div class="muted">
+      Data updates when the repository publishes new JSON files. Times shown in UTC. Plotly v3.x client rendering.
     </div>
+  </header>
 
-    <script>
-        const STATIONS = {{ stations | tojson }};
-        // order used for comparative plots
-        const DESIRED_ORDER = ['chester','ironbridge','farndon','liverpool','queens_park'];
-        let selectedStation = 'chester';
-        let currentNdDays = 1; // default range
-        let currentView = 'compare'; // 'compare' or 'single'
-        // which stations are visible in compare view (legendonly for others)
-        let visibleStations = ['chester'];
+  <div class="container">
+    <aside class="panel controls">
+      <label>Stations</label>
+      <div class="stations" id="station-list"></div>
 
-        function updateVisibleStationsFromPlot() {
-            const gd = document.getElementById('plot');
-            if (!gd || !gd.data) return;
-            // Map traces back to DESIRED_ORDER by name matching if possible
-            const newVisible = [];
-            for (let i = 0; i < gd.data.length; i++) {
-                const d = gd.data[i];
-                // determine key: prefer explicit customdata set on traces
-                const key = (d.customdata && d.customdata[0]) || Object.keys(STATIONS).find(k => STATIONS[k].name === d.name) || DESIRED_ORDER[i] || null;
-                if (!key) continue;
-                if (d.visible === true || d.visible === undefined) {
-                    newVisible.push(key);
-                }
-            }
-            if (newVisible.length > 0) {
-                visibleStations = newVisible;
-                console.log('Visible stations:', visibleStations);
-            }
+      <label>Time range</label>
+      <div class="time-range" id="time-range">
+        <label><input type="radio" name="range" value="1" /> 24 hours</label>
+        <label><input type="radio" name="range" value="3" /> 3 days</label>
+        <label><input type="radio" name="range" value="7" checked /> 7 days</label>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button id="refresh">Refresh</button>
+        <button class="secondary" id="select-all">All</button>
+        <button class="secondary" id="select-none">None</button>
+      </div>
+
+      <div class="muted" id="status" style="margin-top:10px;">Ready.</div>
+    </aside>
+
+    <main class="panel">
+      <div id="chart"></div>
+    </main>
+  </div>
+
+  <footer>
+    Station keys & names mirror your Flask app’s <code>STATIONS</code> mapping.
+  </footer>
+
+  <script>
+    // --- Station config (mirrors flask_app.py) ---  
+    const STATIONS = [
+      { key: "chester",      name: "Chester" },
+      { key: "liverpool",    name: "Liverpool" },
+      { key: "ironbridge",   name: "Ironbridge" },
+      { key: "farndon",      name: "Farndon" },
+      { key: "queens_park",  name: "Queens Park ground water level" }
+    ];
+
+    // Data cache: { key -> {generated_at, rows:[{ts_utc,value}], ready:true} }
+    const cache = new Map();
+    const statusEl = document.getElementById('status');
+
+    // Build station checklist
+    const stationListEl = document.getElementById('station-list');
+    STATIONS.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <input type="checkbox" id="chk_${s.key}" data-key="${s.key}" checked />
+        <label for="chk_${s.key}">${s.name}</label>
+      `;
+      stationListEl.appendChild(row);
+    });
+
+    // Utility: fetch JSON file for a station
+    async function fetchStation(key) {
+      const url = `./data/${key}.json?nocache=${Date.now()}`; // bust caches
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
+      const j = await r.json();
+
+      // Accept either {data:[{ts_utc,value},...]} or an array of rows
+      const rows = Array.isArray(j) ? j : (j.data || []);
+      // Robust transform (accept ts_utc or ISO 'dateTime'/'datetime_utc')
+      const norm = rows.map(row => {
+        if (row.ts_utc != null) {
+          return { t: new Date(row.ts_utc * 1000), v: Number(row.value) };
         }
+        const iso = row.dateTime || row.datetime_utc;
+        const d = iso ? new Date(iso) : null;
+        return (d && !Number.isNaN(d.getTime()))
+          ? { t: d, v: Number(row.value) }
+          : null;
+      }).filter(Boolean);
 
-        function formatTime(dateString) {
-            return new Date(dateString).toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
+      cache.set(key, { generated_at: j.generated_at || null, rows: norm, ready: true });
+    }
+
+    // Basic 15-minute resample to smooth gaps (similar to db_plotly.py)  
+    function resample15Min(rows) {
+      if (!rows || rows.length === 0) return [];
+      // Build a regular grid from min to max time
+      const start = rows[0].t;
+      const end   = rows[rows.length - 1].t;
+      const grid = [];
+      for (let t = start.getTime(); t <= end.getTime(); t += 15 * 60 * 1000) {
+        grid.push(new Date(t));
+      }
+      // Simple nearest-neighbor interpolation (good enough for display)
+      const xs = rows.map(r => r.t.getTime());
+      const ys = rows.map(r => r.v);
+      const out = [];
+      for (const g of grid) {
+        const gt = g.getTime();
+        // binary search nearest
+        let lo = 0, hi = xs.length - 1;
+        while (lo < hi) {
+          const mid = (lo + hi) >> 1;
+          if (xs[mid] < gt) lo = mid + 1; else hi = mid;
         }
+        const idx = Math.max(0, lo - (xs[lo] > gt ? 1 : 0));
+        out.push({ t: g, v: ys[idx] });
+      }
+      return out;
+    }
 
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: '2-digit'
-            });
+    function filterByDays(rows, ndays) {
+      const cutoff = Date.now() - ndays * 24 * 60 * 60 * 1000;
+      return rows.filter(r => r.t.getTime() >= cutoff);
+    }
+
+    async function loadSelectedStations() {
+      statusEl.textContent = 'Loading…';
+      const checks = [...document.querySelectorAll('.stations input[type=checkbox]')];
+      const selected = checks.filter(c => c.checked).map(c => c.dataset.key);
+      for (const key of selected) {
+        if (!cache.get(key)?.ready) {
+          try { await fetchStation(key); }
+          catch (e) { console.error(e); statusEl.textContent = `Fetch failed for ${key}`; }
         }
+      }
+      statusEl.textContent = 'Loaded.';
+      return selected;
+    }
 
-        function createStationCard(key, station) {
-            return `
-                <div class="station-card ${key === selectedStation ? 'active' : ''}" 
-                     onclick="selectStation('${key}')">
-                    <div class="station-header">
-                        <span class="station-name">${station.name}</span>
-                        <span class="source-badge">${station.source}</span>
-                    </div>
-                    <p class="station-description">${station.description}</p>
-                    <div class="station-stats">
-                        <div class="stat">
-                            <div class="stat-label">Current</div>
-                            <div class="stat-value" id="stat-current-${key}">--</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-label">Range</div>
-                            <div class="stat-value" id="stat-range-${key}">--</div>
-                        </div>
-                    </div>
-                    <div id="error-${key}"></div>
-                </div>
-            `;
-        }
+    function getSelectedDays() {
+      const v = document.querySelector('input[name="range"]:checked')?.value || "7";
+      return parseInt(v, 10);
+    }
 
-        function initializeStations() {
-            const grid = document.getElementById('stationsGrid');
-            grid.innerHTML = Object.entries(STATIONS)
-                .map(([key, station]) => createStationCard(key, station))
-                .join('');
-        }
+    async function render() {
+      const selected = await loadSelectedStations();
+      const ndays = getSelectedDays();
 
-        function selectStation(stationKey) {
-            selectedStation = stationKey;
-            currentView = 'single';
-            document.querySelectorAll('.station-card').forEach((card, idx) => {
-                card.classList.toggle('active', 
-                    card === document.querySelectorAll('.station-card')[Object.keys(STATIONS).indexOf(stationKey)]);
-            });
-            loadStationData();
-        }
+      const traces = [];
+      for (const key of selected) {
+        const entry = cache.get(key);
+        if (!entry || !entry.rows?.length) continue;
 
-        async function loadStationData() {
-            const url = `/api/station/${selectedStation}?ndays=${currentNdDays}`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.error) {
-                    displayError(selectedStation, data.error);
-                    plotError(data.error);
-                    return;
-                }
+        // slice window and resample for display
+        const sliced = filterByDays(entry.rows, ndays);
+        if (sliced.length === 0) continue;
+        const regular = resample15Min(sliced);
 
-                // Update stats
-                if (data.stats) {
-                    const lastValue = data.readings[data.readings.length - 1]?.value || 0;
-                    document.getElementById(`stat-current-${selectedStation}`).textContent = 
-                        lastValue.toFixed(2) + ' m';
-                    document.getElementById(`stat-range-${selectedStation}`).textContent = 
-                        `${data.stats.min.toFixed(2)} - ${data.stats.max.toFixed(2)} m`;
-                }
-
-                // Clear error message if exists
-                const errorDiv = document.getElementById(`error-${selectedStation}`);
-                if (errorDiv) errorDiv.innerHTML = '';
-
-                // Plot data
-                plotData(data);
-
-            } catch (error) {
-                displayError(selectedStation, error.message);
-                plotError(error.message);
-            }
-        }
-
-        function displayError(stationKey, message) {
-            const errorDiv = document.getElementById(`error-${stationKey}`);
-            if (errorDiv) {
-                errorDiv.innerHTML = `<div class="error-message">${message}</div>`;
-            }
-        }
-
-        function plotData(data) {
-            const times = data.readings.map(r => new Date(r.dateTime));
-            const values = data.readings.map(r => r.value);
-
-            const trace = {
-                x: times,
-                y: values,
-                type: 'scatter',
-                mode: 'lines+markers',
-                name: data.station.name,
-                line: {
-                    color: '#667eea',
-                    width: 2,
-                    shape: 'spline'
-                },
-                marker: {
-                    size: 5,
-                    color: '#667eea'
-                },
-                fill: 'tozeroy',
-                fillcolor: 'rgba(102, 126, 234, 0.1)'
-            };
-
-            const isQueensPark = selectedStation === 'queens_park';
-            if (isQueensPark) {
-                trace.yaxis = 'y2';
-            }
-
-            const layout = {
-                title: `${data.station.name} - Water Level (last ${currentNdDays} day${currentNdDays>1? 's':''})`,
-                xaxis: {
-                    title: 'Time',
-                    type: 'date'
-                },
-                plot_bgcolor: '#f8f9fa',
-                paper_bgcolor: 'white',
-                margin: {
-                    l: 60,
-                    r: 40,
-                    t: 50,
-                    b: 60
-                },
-                hovermode: 'x unified',
-                    responsive: true,
-                    legend: {
-                        x: 0.02,
-                        y: 0.98,
-                        xanchor: 'left',
-                        yanchor: 'top',
-                        bgcolor: 'rgba(255,255,255,0.9)',
-                        bordercolor: '#cccccc',
-                        borderwidth: 1
-                    }
-            };
-
-            if (isQueensPark) {
-                layout.yaxis2 = {
-                    title: 'Groundwater Level (meters)',
-                    zeroline: false,
-                    autorange: 'reversed'
-                };
-            } else {
-                layout.yaxis = {
-                    title: 'Water Level (meters)',
-                    zeroline: false
-                };
-            }
-
-            Plotly.newPlot('plot', [trace], layout, {responsive: true});
-        }
-
-        function updateRangeButtonsVisual(ndays) {
-            ['1','2','7'].forEach(s => {
-                const btn = document.getElementById(`btn-${s}d`);
-                if (!btn) return;
-                btn.style.opacity = (parseInt(s) === ndays) ? '1' : '0.7';
-                btn.style.boxShadow = (parseInt(s) === ndays) ? '0 6px 20px rgba(0,0,0,0.15)' : 'none';
-            });
-        }
-
-        function setRange(ndays) {
-            currentNdDays = ndays;
-            // update active button styling
-            updateRangeButtonsVisual(ndays);
-            // reload according to current view
-            if (currentView === 'single') {
-                loadStationData();
-            } else {
-                loadDefaultComparison();
-            }
-        }
-
-        function plotError(message) {
-            document.getElementById('plot').innerHTML = 
-                `<div style="padding: 40px; text-align: center; color: #c62828;">
-                    <p>Unable to load chart: ${message}</p>
-                </div>`;
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeStations();
-            // set initial active button visuals (no single-station load)
-            updateRangeButtonsVisual(currentNdDays);
-            currentView = 'compare';
-            // show default comparison view (same layout as Compare All but only Chester)
-            loadDefaultComparison();
+        const stationName = STATIONS.find(s => s.key === key)?.name || key;
+        traces.push({
+          x: regular.map(p => p.t),
+          y: regular.map(p => p.v),
+          mode: 'lines',
+          name: stationName
         });
+      }
 
-        // Auto-refresh every 5 minutes
-        setInterval(loadStationData, 5 * 60 * 1000);
+      const layout = {
+        title: `Water levels — last ${ndays} day${ndays>1?'s':''} (UTC)`,
+        template: 'plotly_dark',
+        paper_bgcolor: '#111827',
+        plot_bgcolor: '#111827',
+        xaxis: { title: 'Time (UTC)' },
+        yaxis: { title: 'Level' },
+        legend: { orientation: 'h', y: 1.1 },
+        margin: { t: 60, r: 20, b: 40, l: 60 }
+      };
 
-        // Fetch and plot all station series on one graph
-        async function loadAllData() {
-            const url = `/api/all?ndays=${currentNdDays}`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
+      Plotly.newPlot('chart', traces, layout, { responsive: true });
+    }
 
-                const colors = ['#667eea', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'];
-                const traces = [];
+    // Controls
+    document.getElementById('refresh').addEventListener('click', () => {
+      // drop readiness to force re-fetch
+      cache.forEach(v => v.ready = false);
+      render();
+    });
+    document.getElementById('select-all').addEventListener('click', () => {
+      document.querySelectorAll('.stations input').forEach(chk => chk.checked = true);
+      render();
+    });
+    document.getElementById('select-none').addEventListener('click', () => {
+      document.querySelectorAll('.stations input').forEach(chk => chk.checked = false);
+      render();
+    });
+    document.getElementById('time-range').addEventListener('change', render);
+    document.getElementById('station-list').addEventListener('change', render);
 
-                let idx = 0;
-                // Explicit plotting order: Chester, Ironbridge, Farndon, Liverpool
-                const desiredOrder = ['chester', 'ironbridge', 'farndon', 'liverpool','queens_park'];
-                for (const key of desiredOrder) {
-                    const stationData = data[key];
-                    if (!stationData) {
-                        // add placeholder trace to keep legend entry
-                        traces.push({ x: [], y: [], type: 'scatter', mode: 'lines', name: key, customdata: [key], visible: visibleStations.includes(key) ? true : 'legendonly' });
-                        idx += 1;
-                        continue;
-                    }
-                    const times = (stationData.readings || []).map(r => new Date(r.dateTime));
-                    const values = (stationData.readings || []).map(r => r.value);
-
-                    const trace = {
-                        x: times,
-                        y: values,
-                        type: 'scatter',
-                        mode: 'lines+markers',
-                        name: stationData.station.name,
-                        customdata: [key],
-                        line: { color: colors[idx % colors.length], width: 2, shape: 'spline' },
-                        marker: { size: 4, color: colors[idx % colors.length] },
-                        visible: visibleStations.includes(key) ? true : 'legendonly'
-                    };
-
-                    // Use secondary y-axis for queens_park (groundwater level)
-                    if (key === 'queens_park') {
-                        trace.yaxis = 'y2';
-                    }
-
-                    traces.push(trace);
-                    idx += 1;
-                }
-
-                if (traces.length === 0) {
-                    plotError('No station data available for comparison');
-                    return;
-                }
-
-                const layout = {
-                    title: `All Stations - Water Level (last ${currentNdDays} day${currentNdDays>1? 's':''})` ,
-                    xaxis: { title: 'Time', type: 'date' },
-                    yaxis: { title: 'Water Level (meters)', zeroline: false },
-                    yaxis2: { 
-                        title: 'Groundwater Level (meters)', 
-                        overlaying: 'y',
-                        side: 'right',
-                        zeroline: false,
-                        autorange: 'reversed'
-                    },
-                    plot_bgcolor: '#f8f9fa',
-                    paper_bgcolor: 'white',
-                    margin: { l: 60, r: 60, t: 50, b: 60 },
-                    hovermode: 'x unified',
-                    responsive: true,
-                    legend: {
-                        x: 0.02,
-                        y: 0.98,
-                        xanchor: 'left',
-                        yanchor: 'top',
-                        bgcolor: 'rgba(255,255,255,0.9)',
-                        bordercolor: '#cccccc',
-                        borderwidth: 1
-                    }
-                };
-
-                const gd = document.getElementById('plot');
-                Plotly.newPlot(gd, traces, layout, {responsive: true}).then(() => {
-                    // attach legend click handler to track visibility changes
-                    // track visibility changes after Plotly restyles (legend toggles)
-                    gd.on('plotly_restyle', function(evt, data) {
-                        updateVisibleStationsFromPlot();
-                    });
-                    // also capture initial state
-                    updateVisibleStationsFromPlot();
-                });
-
-            } catch (error) {
-                plotError(error.message || String(error));
-            }
-        }
-
-                // Default comparison: same as loadAllData but only show Chester
-                async function loadDefaultComparison() {
-                    const url = `/api/all?ndays=${currentNdDays}`;
-                    try {
-                        const response = await fetch(url);
-                        const data = await response.json();
-
-                        const colors = ['#667eea', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'];
-                        const traces = [];
-
-                        // Build traces for all stations; respect previously visible stations
-                        const desiredOrder = ['chester', 'ironbridge', 'farndon', 'liverpool', 'queens_park'];
-                        let idx = 0;
-                        for (const key of desiredOrder) {
-                            const stationData = data[key];
-                            // create entries for legend even if no readings
-                            if (!stationData) {
-                                // add an empty trace so the station appears in the legend
-                                traces.push({ x: [], y: [], type: 'scatter', mode: 'lines', name: (STATIONS[key] && STATIONS[key].name) || key, customdata: [key], visible: visibleStations.includes(key) ? true : 'legendonly' });
-                                idx += 1;
-                                continue;
-                            }
-                            const times = (stationData.readings || []).map(r => new Date(r.dateTime));
-                            const values = (stationData.readings || []).map(r => r.value);
-
-                            const trace = {
-                                x: times,
-                                y: values,
-                                type: 'scatter',
-                                mode: 'lines+markers',
-                                name: stationData.station.name,
-                                customdata: [key],
-                                line: { color: colors[idx % colors.length], width: 2, shape: 'spline' },
-                                marker: { size: 4, color: colors[idx % colors.length] },
-                                visible: visibleStations.includes(key) ? true : 'legendonly'
-                            };
-
-                            // Use secondary axis for queens_park
-                            if (key === 'queens_park') {
-                                trace.yaxis = 'y2';
-                            }
-
-                            traces.push(trace);
-                            idx += 1;
-                        }
-
-                        if (traces.length === 0) {
-                            plotError('No station data available for comparison');
-                            return;
-                        }
-
-                        const layout = {
-                            title: `All Stations - Water Level (last ${currentNdDays} day${currentNdDays>1? 's':''})` ,
-                            xaxis: { title: 'Time', type: 'date' },
-                            yaxis: { title: 'Water Level (meters)', zeroline: false },
-                            yaxis2: { title: 'Groundwater Level (meters)', overlaying: 'y', side: 'right', zeroline: false, autorange: 'reversed' },
-                            plot_bgcolor: '#f8f9fa',
-                            paper_bgcolor: 'white',
-                            margin: { l: 60, r: 60, t: 50, b: 60 },
-                            hovermode: 'x unified',
-                            responsive: true,
-                            legend: {
-                                x: 0.02,
-                                y: 0.98,
-                                xanchor: 'left',
-                                yanchor: 'top',
-                                bgcolor: 'rgba(255,255,255,0.9)',
-                                bordercolor: '#cccccc',
-                                borderwidth: 1
-                            }
-                        };
-
-                        const gd = document.getElementById('plot');
-                        Plotly.newPlot(gd, traces, layout, {responsive: true}).then(() => {
-                            // track visibility changes after plot restyles (legend toggles)
-                            gd.on('plotly_restyle', function(evt, data) {
-                                updateVisibleStationsFromPlot();
-                            });
-                            updateVisibleStationsFromPlot();
-                        });
-
-                    } catch (error) {
-                        plotError(error.message || String(error));
-                    }
-                }
-    </script>
+    // initial render
+    render();
+  </script>
 </body>
 </html>
