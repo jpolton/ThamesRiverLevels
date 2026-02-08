@@ -1,8 +1,8 @@
 name: Refresh JSON for GitHub Pages
 
 on:
-  schedule:
-    - cron: "*/30 * * * *"   # every 30 minutes UTC  (Actions won't reliably run < 5 minutes)
+  #schedule:
+  #  - cron: "*/30 * * * *"   # every 30 minutes UTC  (Actions won't reliably run < 5 minutes)
   workflow_dispatch:
 
 jobs:
