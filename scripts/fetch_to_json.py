@@ -1,7 +1,7 @@
 # scripts/fetch_to_json.py
 import os, json, pandas as pd
 from datetime import datetime, timedelta, timezone
-from flask_app import STATIONS, get_station_data  # reuse your fetch logic  [3](https://nocacuk-my.sharepoint.com/personal/jelt_noc_ac_uk/Documents/Microsoft%20Copilot%20Chat%20Files/db_plotly.py)
+from flask_app import STATIONS, get_station_data  # reuse your fetch logic  
 
 OUT_DIR = os.environ.get("OUT_DIR", "docs/data")
 NDAYS = int(os.environ.get("NDAYS", "7"))
@@ -10,7 +10,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 now = datetime.now(timezone.utc)
 
 for key, meta in STATIONS.items():
-    resp = get_station_data(key, ndays=NDAYS)  # returns {"readings":[{"dateTime","value"},...]}  [3](https://nocacuk-my.sharepoint.com/personal/jelt_noc_ac_uk/Documents/Microsoft%20Copilot%20Chat%20Files/db_plotly.py)
+    resp = get_station_data(key, ndays=NDAYS)  # returns {"readings":[{"dateTime","value"},...]}  
     rows = resp.get("readings", [])
     # normalize to ts_utc & value for the browser
     norm = []
