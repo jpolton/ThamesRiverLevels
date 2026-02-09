@@ -21,7 +21,7 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install Flask pandas requests numpy python-dateutil COAST
+          pip install Flask pandas requests numpy python-dateutil COAsT
 
       - name: Generate station JSON
         env:
