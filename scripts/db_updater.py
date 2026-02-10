@@ -8,9 +8,9 @@ db_updater.py — Persist last-7-days time series for STATIONS into SQLite.
 - Can run once (for cron) or loop every 15 minutes
 
 Usage:
-  python db_updater.py --db ./timeseries.sqlite --once --days 7 --log-file test_update.log
-  python db_updater.py --db ./timeseries.sqlite --loop --days 7
-  python db_updater.py --db ./timeseries.sqlite --backfill-days 7 --once
+  python db_updater.py --db ../docs/data/timeseries.sqlite --once --days 7 --log-file test_update.log
+  python db_updater.py --db ../docs/data/timeseries.sqlite --loop --days 7
+  python db_updater.py --db ../docs/data/timeseries.sqlite --backfill-days 7 --once
 
 Author: you
 """
@@ -41,7 +41,7 @@ except Exception as e:
 # ref: flask_app.py 
 
 
-DEFAULT_DB_PATH = os.environ.get("TS_DB_PATH", "timeseries.sqlite")
+DEFAULT_DB_PATH = os.environ.get("TS_DB_PATH", "../docs/data/timeseries.sqlite")
 RETENTION_DAYS = int(os.environ.get("TS_RETENTION_DAYS", "7"))   # keep last 7 days
 FETCH_WINDOW_DAYS = int(os.environ.get("TS_FETCH_WINDOW_DAYS", "7"))  # refetch this window each run
 
