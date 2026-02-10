@@ -27,6 +27,14 @@ try:
 except Exception as e:
     print(f"Warning: Shoothill API not available ({e}). Shoothill stations will not work.")
 
+
+try:
+    # Add parent directory to path to find nrw_api if running as script
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from nrw_api.nrw_api import fetch_historical_data
+except Exception as e:
+    print(f"Warning: NRW API not available ({e}). NRW stations will not work.")
+
 app = Flask(__name__, template_folder='docs')
 
 # Station definitions
@@ -44,24 +52,28 @@ STATIONS = {
         "description": "Environment Agency monitoring station"
     },
     "ironbridge": {
-        "id": "968",
+        "id": "4173", #NRW:4273 Shoothill:968,
         "name": "Ironbridge",
-        "source": "Shoothill",
-        "description": "Shoothill monitoring station"
+        "source": "NRW",
+        "description": "Natural Resources Wales monitoring station",
+        "parameter_id": 41
+        # Addtional, EA, data on IronBridge (doesn't seem to work): https://environment.data.gov.uk/flood-monitoring/id/stations/067027_TG_127/stageScale
     },
     "farndon": {
-        "id": "972",
+        "id": "4170", #NRW:4170 Shoothill:972,
         "name": "Farndon",
-        "source": "Shoothill",
-        "description": "Shoothill monitoring station"
+        "source": "NRW",
+        "description": "Natural Resources Wales monitoring station",
+        "parameter_id": 40
     },
     "queens_park": {
-        "id": "10831",
+        "id": "SJ46_109", #EA:SJ46_109 Shoothill:10831,
         "name": "Queens Park ground water level",
-        "source": "Shoothill",
-        "description": "Shoothill monitoring station"
+        "source": "EA",
+        "description": "Environment Agency monitoring station"
     }
 }
+# Extra EA data on Finchett's Gutter etc: https://environment.data.gov.uk/flood-monitoring/id/stations?lat=53.1899&long=-2.8853&dist=10
 
 
 def fetch_station_data(station_id: str, ndays: int = 1) -> dict:
@@ -213,6 +225,16 @@ def get_station_data(station_key: str, ndays: int = 1) -> dict:
     try:
         if station["source"] == "EA":
             data = fetch_station_data(station["id"], ndays=ndays)
+            readings = [
+                {
+                    "dateTime": item["dateTime"],
+                    "value": item["value"]
+                }
+                for item in data.get("items", [])
+            ]
+        elif station["source"] == "NRW":
+            parameter_id = station.get("parameter_id", 41) # Default to 41 if not specified
+            data = fetch_historical_data(station["id"], ndays=ndays, parameter=parameter_id)
             readings = [
                 {
                     "dateTime": item["dateTime"],

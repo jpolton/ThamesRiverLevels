@@ -1,4 +1,7 @@
 # scripts/fetch_to_json.py
+"""
+Created as an alternative to using sqlite. Not sure that json files are the way forward though.
+"""
 import os, json, pandas as pd
 from datetime import datetime, timedelta, timezone
 from flask_app import STATIONS, get_station_data  # reuse your fetch logic  

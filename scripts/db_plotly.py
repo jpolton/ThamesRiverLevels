@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta, timezone
 
-DB_PATH = "./timeseries.sqlite"
+DB_PATH = "timeseries.sqlite"
 STATIONS = ["chester", "liverpool", "ironbridge", "farndon", "queens_park"]
 
 def load(db, station_key, days=7):

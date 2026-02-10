@@ -8,7 +8,7 @@ db_updater.py — Persist last-7-days time series for STATIONS into SQLite.
 - Can run once (for cron) or loop every 15 minutes
 
 Usage:
-  python db_updater.py --db ./timeseries.sqlite --once --days 7
+  python db_updater.py --db ./timeseries.sqlite --once --days 7 --log-file test_update.log
   python db_updater.py --db ./timeseries.sqlite --loop --days 7
   python db_updater.py --db ./timeseries.sqlite --backfill-days 7 --once
 
@@ -24,6 +24,9 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 
+# Add current directory to sys.path to ensure we can import local modules
+sys.path.append(os.getcwd())
+
 # --- import from your existing Flask app so behavior stays consistent ---
 # (This relies on flask_app.py being in the same directory)
 try:
@@ -38,7 +41,7 @@ except Exception as e:
 # ref: flask_app.py 
 
 
-DEFAULT_DB_PATH = os.environ.get("TS_DB_PATH", "./timeseries.sqlite")
+DEFAULT_DB_PATH = os.environ.get("TS_DB_PATH", "timeseries.sqlite")
 RETENTION_DAYS = int(os.environ.get("TS_RETENTION_DAYS", "7"))   # keep last 7 days
 FETCH_WINDOW_DAYS = int(os.environ.get("TS_FETCH_WINDOW_DAYS", "7"))  # refetch this window each run
 
@@ -162,13 +165,18 @@ def main():
     parser.add_argument("--backfill-days", type=int, default=0,
                         help="Optional one-off backfill window (days) to fetch before normal run")
     parser.add_argument("--log-level", default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR)")
+    parser.add_argument("--log-file", default=None, help="Optional log file path (default: log to console)")
     args = parser.parse_args()
 
     # make retention & fetch tunable via CLI
-    logging.basicConfig(
-        level=getattr(logging, args.log_level.upper(), logging.INFO),
-        format="%(asctime)s %(levelname)s %(message)s"
-    )
+    log_config = {
+        "level": getattr(logging, args.log_level.upper(), logging.INFO),
+        "format": "%(asctime)s %(levelname)s %(message)s",
+        "force": True  # Override any existing logging configuration
+    }
+    if args.log_file:
+        log_config["filename"] = args.log_file
+    logging.basicConfig(**log_config)
 
     # connect to DB
     conn = sqlite3.connect(args.db, timeout=30, isolation_level=None)  # autocommit
