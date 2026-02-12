@@ -242,9 +242,9 @@ def get_station_data(station_key: str, ndays: int = 1) -> dict:
                 }
                 for item in data.get("items", [])
             ]
-        else:  # Shoothill
-            dataset = fetch_shoothill_data(station["id"], ndays=ndays)
-            readings = parse_shoothill_data(dataset)
+        #else:  # Shoothill
+        #    dataset = fetch_shoothill_data(station["id"], ndays=ndays)
+        #    readings = parse_shoothill_data(dataset)
         
         if not readings:
             return {
