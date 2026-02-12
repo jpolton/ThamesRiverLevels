@@ -1,11 +1,13 @@
 ########### Python 3.2 #############
-import urllib.request, urllib.parse, json
+import urllib.request, urllib.parse, json, os
+
 
 
 try:
-    import config_keys # Load secret keys
-except:
-    print('Need a NRW API Key.')
+    NRW_KEY=os.environ["NRW_KEY"]
+except KeyError:
+    logging.info('Need a NRW API Key')
+
 
 from datetime import datetime, timedelta
 
@@ -31,7 +33,7 @@ def fetch_historical_data(station_id, ndays=3, parameter=41):
     hdr ={
     # Request headers
     'Cache-Control': 'no-cache',
-    'Ocp-Apim-Subscription-Key': config_keys.NRW_KEY,
+    'Ocp-Apim-Subscription-Key': NRW_KEY,
     }
 
     req = urllib.request.Request(url, headers=hdr)
