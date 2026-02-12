@@ -1,12 +1,21 @@
-########### Python 3.2 #############
-import urllib.request, urllib.parse, json, os
+import urllib.request, urllib.parse, json, os, logging
 
-
+# Configure basic logging
+logging.basicConfig(level=logging.INFO)
 
 try:
-    NRW_KEY=os.environ["NRW_KEY"]
-except KeyError:
-    logging.info('Need a NRW API Key')
+    NRW_KEY = os.environ.get("NRW_KEY")
+    if not NRW_KEY:
+        # Fallback to config_keys if exists, for backward compatibility or local testing
+        try:
+            import config_keys
+            NRW_KEY = config_keys.NRW_KEY
+        except (ImportError, AttributeError):
+            logging.error('Need a NRW API Key (set NRW_KEY environment variable or config_keys.py).')
+            NRW_KEY = None
+except Exception as e:
+    logging.error(f'Error loading NRW API Key: {e}')
+    NRW_KEY = None
 
 
 from datetime import datetime, timedelta
