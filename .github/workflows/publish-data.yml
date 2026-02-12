@@ -23,9 +23,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install Flask pandas requests numpy python-dateutil
           
-      - name: Install COAsT
-        run: |
-          pip install COAsT
 
       - name: Generate station JSON
         env:
@@ -34,7 +31,8 @@ jobs:
           # Add API keys as needed via repository "Actions secrets"
           SHOOTHILL_KEY: ${{ secrets.SHOOTHILL_KEY }}
         run: |
-          python scripts/fetch_to_json.py
+          python scripts/db_updater.py --db ../docs/data/timeseries.sqlite --once --days 7 --log-file test_update.log
+          python scripts/db_to_json.py --db ../docs/data/timeseries.sqlite --output-dir ../docs/data
 
       - name: Commit & push if changed
         run: |
