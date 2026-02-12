@@ -268,7 +268,19 @@
       const selected = await loadSelectedStations();
       const ndays = getSelectedDays();
 
+      // Traces list
       const traces = [];
+
+      // Add a hidden dummy trace to ensure 'y1' is always considered "present"
+      // by Plotly, which is necessary for yaxis2/3 overlaying to work correctly.
+      traces.push({
+        x: [new Date()],
+        y: [null],
+        showlegend: false,
+        yaxis: 'y1',
+        hoverinfo: 'none'
+      });
+
       for (const key of selected) {
         const entry = cache.get(key);
         if (!entry || !entry.rows?.length) continue;
@@ -296,7 +308,7 @@
           trace.yaxis = 'y3';
           trace.line = { color: 'orange' };
         } else {
-          trace.yaxis = 'y';
+          trace.yaxis = 'y1';
         }
 
         traces.push(trace);
@@ -311,7 +323,7 @@
           title: { text: 'Time (UTC)' },
           domain: [0.12, 0.94]
         },
-        yaxis: {
+        yaxis1: {
           title: { text: 'River Level (m)' },
           side: 'left',
           anchor: 'x'
@@ -319,7 +331,7 @@
         yaxis2: {
           title: { text: 'Groundwater Level (m)' },
           side: 'right',
-          overlaying: 'y',
+          overlaying: 'y1',
           autorange: 'reversed',
           color: 'purple',
           showgrid: false,
@@ -328,7 +340,7 @@
         yaxis3: {
           title: { text: 'Liverpool (m)' },
           side: 'left',
-          overlaying: 'y',
+          overlaying: 'y1',
           anchor: 'free',
           position: 0,
           color: 'orange',
