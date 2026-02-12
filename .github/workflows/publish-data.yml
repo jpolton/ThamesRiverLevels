@@ -35,7 +35,7 @@ jobs:
           
       - name: Generate station JSON
         run: |
-          python scripts/db_to_json.py --db docs/data/timeseries.sqlite --output-dir ../docs/data
+          python scripts/db_to_json.py --db docs/data/timeseries.sqlite --output-dir docs/data
 
       - name: Commit & push if changed
         run: |
