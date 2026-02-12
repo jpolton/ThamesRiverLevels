@@ -29,7 +29,7 @@ jobs:
           OUT_DIR: docs/data
           NDAYS: "7"
           # Add API keys as needed via repository "Actions secrets"
-          # SHOOTHILL_KEY: ${{ secrets.SHOOTHILL_KEY }}
+          NRW_KEY: ${{ secrets.NRW_KEY }}
         run: |
           python scripts/db_updater.py --db docs/data/timeseries.sqlite --once --days 7 --log-file test_update.log
           
