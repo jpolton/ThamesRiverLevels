@@ -279,11 +279,14 @@
         const regular = resample15Min(sliced);
 
         const stationName = STATIONS.find(s => s.key === key)?.name || key;
+        const isGroundwater = key === "queens_park";
+
         traces.push({
           x: regular.map(p => p.t),
           y: regular.map(p => p.v),
           mode: 'lines',
-          name: stationName
+          name: stationName,
+          yaxis: isGroundwater ? 'y2' : 'y1'
         });
       }
 
@@ -293,9 +296,16 @@
         paper_bgcolor: '#111827',
         plot_bgcolor: '#111827',
         xaxis: { title: 'Time (UTC)' },
-        yaxis: { title: 'Level' },
+        yaxis: { title: 'River Level (m)', side: 'left' },
+        yaxis2: {
+          title: 'Groundwater Level (m)',
+          side: 'right',
+          overlaying: 'y',
+          autorange: 'reversed',
+          showgrid: false
+        },
         legend: { orientation: 'h', y: 1.1 },
-        margin: { t: 60, r: 20, b: 40, l: 60 }
+        margin: { t: 60, r: 60, b: 40, l: 60 }
       };
 
       Plotly.newPlot('chart', traces, layout, { responsive: true });
