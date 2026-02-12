@@ -17,15 +17,15 @@ import sys
 import os
 
 # Try to import shoothill_api (optional, requires coast library)
-GAUGE = None
-try:
-    sys.path.append(os.path.dirname(os.path.abspath("shoothill_api/shoothill_api.py")))
-    try:
-        from shoothill_api import GAUGE
-    except ImportError:
-        from shoothill_api.shoothill_api import GAUGE
-except Exception as e:
-    print(f"Warning: Shoothill API not available ({e}). Shoothill stations will not work.")
+#GAUGE = None
+#try:
+#    sys.path.append(os.path.dirname(os.path.abspath("shoothill_api/shoothill_api.py")))
+#    try:
+#        from shoothill_api import GAUGE
+#    except ImportError:
+#        from shoothill_api.shoothill_api import GAUGE
+#except Exception as e:
+#    print(f"Warning: Shoothill API not available ({e}). Shoothill stations will not work.")
 
 
 try:
