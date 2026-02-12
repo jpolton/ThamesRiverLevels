@@ -5,7 +5,7 @@ import urllib.request, urllib.parse, json
 try:
     import config_keys # Load secret keys
 except:
-    print('Need a Shoothil API Key. Use e.g. create_shoothill_key() having obtained a public key')
+    print('Need a NRW API Key.')
 
 from datetime import datetime, timedelta
 
