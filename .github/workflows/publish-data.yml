@@ -24,7 +24,7 @@ jobs:
           pip install Flask pandas requests numpy python-dateutil
           
 
-      - name: Generate station JSON
+      - name: Generate station DB
         env:
           OUT_DIR: docs/data
           NDAYS: "7"
@@ -32,6 +32,9 @@ jobs:
           # SHOOTHILL_KEY: ${{ secrets.SHOOTHILL_KEY }}
         run: |
           python scripts/db_updater.py --db docs/data/timeseries.sqlite --once --days 7 --log-file test_update.log
+          
+      - name: Generate station JSON
+        run: |
           python scripts/db_to_json.py --db docs/data/timeseries.sqlite --output-dir ../docs/data
 
       - name: Commit & push if changed
