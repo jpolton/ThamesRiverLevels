@@ -356,14 +356,20 @@
         traces.push(trace);
       }
 
+      const isMobile = window.innerWidth < 850;
       const layout = {
-        title: { text: `Water levels — last ${ndays} day${ndays > 1 ? 's' : ''} (UTC)` },
+        title: {
+          text: `Water levels — last ${ndays} day${ndays > 1 ? 's' : ''} (UTC)`,
+          y: 0.98,
+          yanchor: 'top',
+          pad: { t: 10 }
+        },
         template: 'plotly_dark',
         paper_bgcolor: '#111827',
         plot_bgcolor: '#111827',
         xaxis: {
           title: { text: 'Time (UTC)' },
-          domain: [0.12, 0.94]
+          domain: isMobile ? [0.08, 0.92] : [0.12, 0.94]
         },
         yaxis1: {
           title: { text: 'Chester, Ironbridge, Farndon River Level (m)' },
@@ -388,8 +394,19 @@
           color: 'orange',
           showgrid: false
         },
-        legend: { orientation: 'h', y: 1.1 },
-        margin: { t: 60, r: 60, b: 40, l: 80 }
+        legend: {
+          orientation: 'h',
+          y: isMobile ? 1.05 : 1.08,
+          yanchor: 'bottom',
+          x: 0.5,
+          xanchor: 'center'
+        },
+        margin: {
+          t: isMobile ? 180 : 120, // More space on mobile for multi-line legend
+          r: 60,
+          b: 40,
+          l: isMobile ? 60 : 80
+        }
       };
 
       Plotly.newPlot('chart', traces, layout, { responsive: true });
