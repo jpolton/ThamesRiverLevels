@@ -430,6 +430,10 @@
     document.getElementById('station-list').addEventListener('change', render);
 
     // initial render
+    if (window.innerWidth < 850) {
+      const radio3 = document.querySelector('input[name="range"][value="3"]');
+      if (radio3) radio3.checked = true;
+    }
     render();
   </script>
 </body>
