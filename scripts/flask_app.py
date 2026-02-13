@@ -37,7 +37,7 @@ except Exception as e:
 
 app = Flask(__name__, template_folder='docs')
 
-# Station definitions
+# Station definitions.
 STATIONS = {
     "chester": {
         "id": "067033_TG_148",
@@ -339,4 +339,4 @@ def api_all():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=True, host="0.0.0.0", port=5002)
