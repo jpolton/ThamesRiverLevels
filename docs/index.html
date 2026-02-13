@@ -50,6 +50,7 @@
       /* minus header */
       padding: 16px;
       box-sizing: border-box;
+      transition: all 0.3s ease;
     }
 
     .panel {
@@ -57,6 +58,8 @@
       border: 1px solid #1f2937;
       border-radius: 12px;
       padding: 12px;
+      min-width: 0;
+      /* prevent grid blowouts */
     }
 
     .controls label {
@@ -113,6 +116,43 @@
       min-height: 420px;
     }
 
+    @media (max-width: 850px) {
+      .container {
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: 1fr;
+        height: auto;
+        padding: 8px;
+        overflow: visible;
+      }
+
+      aside.panel {
+        order: 2;
+        /* Move controls below chart on mobile if desired, or keep at 1 */
+      }
+
+      main.panel {
+        order: 1;
+      }
+
+      #chart {
+        height: 450px;
+        min-height: 400px;
+      }
+
+      .panel {
+        margin-bottom: 8px;
+      }
+
+      header h1 {
+        font-size: 1.25rem;
+      }
+
+      header {
+        padding: 12px;
+      }
+    }
+
     footer {
       padding: 8px 16px;
       color: var(--muted);
@@ -165,11 +205,11 @@
   <script>
     // --- Station config (mirrors flask_app.py) ---  
     const STATIONS = [
-      { key: "chester", name: "Chester" },
-      { key: "liverpool", name: "Liverpool" },
-      { key: "ironbridge", name: "Ironbridge" },
-      { key: "farndon", name: "Farndon" },
-      { key: "queens_park", name: "Queens Park ground water level" }
+      { key: "chester", name: "Chester", color: "red" },
+      { key: "liverpool", name: "Liverpool", color: "orange" },
+      { key: "ironbridge", name: "Ironbridge", color: "green" },
+      { key: "farndon", name: "Farndon", color: "blue" },
+      { key: "queens_park", name: "Queens Park ground water level", color: "purple" }
     ];
 
     // Data cache: { key -> {generated_at, rows:[{ts_utc,value}], ready:true} }
@@ -183,7 +223,7 @@
       row.className = 'row';
       row.innerHTML = `
         <input type="checkbox" id="chk_${s.key}" data-key="${s.key}" checked />
-        <label for="chk_${s.key}">${s.name}</label>
+        <label for="chk_${s.key}" style="color: ${s.color || 'inherit'}">${s.name}</label>
       `;
       stationListEl.appendChild(row);
     });
@@ -290,7 +330,10 @@
         if (sliced.length === 0) continue;
         const regular = resample15Min(sliced);
 
-        const stationName = STATIONS.find(s => s.key === key)?.name || key;
+        const station = STATIONS.find(s => s.key === key);
+        const stationName = station?.name || key;
+        const stationColor = station?.color;
+
         const isGroundwater = key === "queens_park";
         const isLiverpool = key === "liverpool";
 
@@ -298,15 +341,14 @@
           x: regular.map(p => p.t),
           y: regular.map(p => p.v),
           mode: 'lines',
-          name: stationName
+          name: stationName,
+          line: stationColor ? { color: stationColor } : {}
         };
 
         if (isGroundwater) {
           trace.yaxis = 'y2';
-          trace.line = { color: 'purple' };
         } else if (isLiverpool) {
           trace.yaxis = 'y3';
-          trace.line = { color: 'orange' };
         } else {
           trace.yaxis = 'y1';
         }
@@ -324,7 +366,7 @@
           domain: [0.12, 0.94]
         },
         yaxis1: {
-          title: { text: 'River Level (m)' },
+          title: { text: 'Chester, Ironbridge, Farndon River Level (m)' },
           side: 'left',
           anchor: 'x'
         },
