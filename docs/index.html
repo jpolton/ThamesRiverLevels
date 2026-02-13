@@ -204,11 +204,12 @@
 
   <script>
     // --- Station config (mirrors flask_app.py) ---  
+    // Source of typical ranges: riverlevels.uk 
     const STATIONS = [
       { key: "chester", name: "Chester", color: "red" },
       { key: "liverpool", name: "Liverpool", color: "orange" },
-      { key: "ironbridge", name: "Ironbridge", color: "green" },
-      { key: "farndon", name: "Farndon", color: "blue" },
+      { key: "ironbridge", name: "Ironbridge", color: "green", typicalrange: [4.38, 6.06] },
+      { key: "farndon", name: "Farndon", color: "blue", typicalrange: [4.57, 8.36] },
       { key: "queens_park", name: "Queens Park ground water level", color: "purple" }
     ];
 
@@ -226,7 +227,32 @@
         <label for="chk_${s.key}" style="color: ${s.color || 'inherit'}">${s.name}</label>
       `;
       stationListEl.appendChild(row);
+
+      // Add typical range option if available
+      if (s.typicalrange) {
+        const rangeRow = document.createElement('div');
+        rangeRow.className = 'row';
+        rangeRow.style.paddingLeft = '20px';
+        rangeRow.style.fontSize = '0.85rem';
+        rangeRow.innerHTML = `
+          <input type="checkbox" id="chk_range_${s.key}" data-key="${s.key}" />
+          <label for="chk_range_${s.key}" style="color: var(--muted)">Typical range (${s.typicalrange[0]}-${s.typicalrange[1]}m)</label>
+        `;
+        stationListEl.appendChild(rangeRow);
+      }
     });
+
+    function getRGBA(colorName, opacity) {
+      const colors = {
+        'red': `rgba(255, 0, 0, ${opacity})`,
+        'orange': `rgba(255, 165, 0, ${opacity})`,
+        'green': `rgba(0, 128, 0, ${opacity})`,
+        'blue': `rgba(0, 0, 255, ${opacity})`,
+        'purple': `rgba(128, 0, 128, ${opacity})`
+      };
+      return colors[colorName] || `rgba(128, 128, 128, ${opacity})`;
+    }
+
 
     // Utility: fetch JSON file for a station
     async function fetchStation(key) {
@@ -355,6 +381,42 @@
 
         traces.push(trace);
       }
+
+      // --- Typical Range Shading ---
+      // 1. Determine aggregate time window across all active traces
+      let minT = Infinity, maxT = -Infinity;
+      traces.forEach(t => {
+        if (!t.x || t.x.length < 2) return;
+        t.x.forEach(d => {
+          const val = d.getTime();
+          if (val < minT) minT = val;
+          if (val > maxT) maxT = val;
+        });
+      });
+
+      if (minT !== Infinity) {
+        STATIONS.forEach(s => {
+          if (!s.typicalrange) return;
+          const rangeChk = document.getElementById(`chk_range_${s.key}`);
+          if (rangeChk && rangeChk.checked) {
+            // Plot as a filled rectangle trace
+            const low = s.typicalrange[0];
+            const high = s.typicalrange[1];
+            traces.push({
+              x: [new Date(minT), new Date(maxT), new Date(maxT), new Date(minT)],
+              y: [low, low, high, high],
+              fill: 'toself',
+              fillcolor: getRGBA(s.color, 0.4), // 40-50% opacity
+              line: { width: 0 },
+              name: `${s.name} Typical Range`,
+              showlegend: true,
+              yaxis: 'y1',
+              hoverinfo: 'skip'
+            });
+          }
+        });
+      }
+
 
       const isMobile = window.innerWidth < 850;
       const layout = {
