@@ -44,6 +44,7 @@ STATIONS = {
         "name": "Chester",
         "source": "EA",
         "description": "Environment Agency monitoring station"
+        # The weir has an id: https://environment.data.gov.uk/flood-monitoring/id/stations/067033 but it doesn't seem to have any data
     },
     "liverpool": {
         "id": "E70124",
