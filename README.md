@@ -1,6 +1,6 @@
 # DeeRiverLevels
 
-### [Click here for graph: ](https://jpolton.github.io/DeeRiverLevels/index.html)
+### [Click here for graph](https://jpolton.github.io/DeeRiverLevels/index.html)
 
 
 
