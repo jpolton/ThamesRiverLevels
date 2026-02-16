@@ -11,8 +11,18 @@ try:
             import config_keys
             NRW_KEY = config_keys.NRW_KEY
         except (ImportError, AttributeError):
-            logging.error('Need a NRW API Key (set NRW_KEY environment variable or config_keys.py).')
-            NRW_KEY = None
+            # Try to find config_keys in parent directory if it's not in path
+            try:
+                import sys
+                from pathlib import Path
+                parent_dir = str(Path(__file__).resolve().parent.parent)
+                if parent_dir not in sys.path:
+                    sys.path.append(parent_dir)
+                import config_keys
+                NRW_KEY = config_keys.NRW_KEY
+            except (ImportError, AttributeError):
+                logging.error('Need a NRW API Key (set NRW_KEY environment variable or config_keys.py).')
+                NRW_KEY = None
 except Exception as e:
     logging.error(f'Error loading NRW API Key: {e}')
     NRW_KEY = None

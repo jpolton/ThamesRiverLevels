@@ -16,16 +16,7 @@ import json
 import sys
 import os
 
-# Try to import shoothill_api (optional, requires coast library)
-#GAUGE = None
-#try:
-#    sys.path.append(os.path.dirname(os.path.abspath("shoothill_api/shoothill_api.py")))
-#    try:
-#        from shoothill_api import GAUGE
-#    except ImportError:
-#        from shoothill_api.shoothill_api import GAUGE
-#except Exception as e:
-#    print(f"Warning: Shoothill API not available ({e}). Shoothill stations will not work.")
+# NRW API import
 
 
 try:
@@ -106,114 +97,7 @@ def fetch_station_data(station_id: str, ndays: int = 1) -> dict:
         return {"items": []}
 
 
-def get_shoothill_datatype(station_id: str) -> int:
-    """Get the correct dataType for a Shoothill station from the API."""
-    try:
-        import config_keys
-        SessionHeaderId = config_keys.SHOOTHILL_KEY
-    except:
-        print(f"Warning: Could not load SHOOTHILL_KEY from config_keys")
-        return 3  # Default to 3 for backwards compatibility
-    
-    try:
-        headers = {'content-type': 'application/json', 'SessionHeaderId': SessionHeaderId}
-        url = f'http://riverlevelsapi.shoothill.com/TimeSeries/GetTimeSeriesStationById/?stationId={station_id}'
-        response = requests.get(url, headers=headers, timeout=10)
-        data = response.json()
-        
-        if 'gaugeList' in data and data['gaugeList']:
-            gauge_list = data['gaugeList']
-            if isinstance(gauge_list, str):
-                gauge_list = json.loads(gauge_list)
-            
-            if isinstance(gauge_list, list) and len(gauge_list) > 0:
-                dataTypeId = gauge_list[0].get('dataTypeId', 3)
-                print(f"Station {station_id}: Using dataTypeId={dataTypeId}")
-                return dataTypeId
-    except Exception as e:
-        print(f"Warning: Could not determine dataType for station {station_id}: {e}")
-    
-    return 3  # Default fallback
 
-
-def fetch_shoothill_data(station_id: str, ndays: int = 1) -> dict:
-    """Fetch readings from Shoothill API for the last `ndays` days."""
-    if GAUGE is None:
-        return None
-
-    try:
-        # Use ndays to compute date_start (inclusive) and date_end (now)
-        date_end = np.datetime64('now')
-        # subtract ndays days from date_end
-        date_start = date_end - np.timedelta64(int(ndays), 'D')
-
-        # Get the correct dataType for this station
-        dataType = get_shoothill_datatype(station_id)
-
-        gauge = GAUGE()
-        dataset = gauge.read_shoothill_to_xarray(
-            station_id=station_id,
-            date_start=date_start,
-            date_end=date_end,
-            dataType=dataType
-        )
-        return dataset
-    except Exception as e:
-        print(f"Error fetching Shoothill data: {e}")
-        return None
-
-
-def parse_shoothill_data(dataset) -> list:
-    """Convert xarray dataset to readings list."""
-    readings = []
-    if dataset is None:
-        return readings
-    
-    try:
-        df_temp = dataset.to_dataframe().reset_index()
-        value_col = None
-        
-        # Find water level column
-        for col in df_temp.columns:
-            if col.lower() in ['water_level', 'level', 'value', 'z']:
-                value_col = col
-                break
-        
-        if value_col is None:
-            time_cols = ['time', 'datetime', 'date_time']
-            value_col = next(
-                (col for col in df_temp.columns if col.lower() not in time_cols),
-                None
-            )
-        
-        if value_col:
-            # Determine time column name
-            time_col = next((c for c in df_temp.columns if c.lower() in ['time', 'datetime', 'date_time']), None)
-            if time_col is None:
-                # Fallback: first column that looks like a datetime index name
-                time_col = 'time' if 'time' in df_temp.columns else df_temp.columns[0]
-
-            # Parse times robustly (handles fractional seconds and mixed ISO formats)
-            # Let pandas infer formats; coerce errors to NaT
-            times = pd.to_datetime(df_temp[time_col], utc=True, errors='coerce')
-
-            # Build readings only for rows with valid times and numeric values
-            for idx, t in enumerate(times):
-                if pd.isna(t):
-                    continue
-                try:
-                    value = float(df_temp.iloc[idx][value_col])
-                except (ValueError, TypeError, KeyError):
-                    continue
-                if pd.notna(value):
-                    readings.append({
-                        "dateTime": t.isoformat(),
-                        "value": float(value)
-                    })
-    except Exception as e:
-        print(f"Error parsing Shoothill data: {e}")
-    
-    return readings
 
 
 def get_station_data(station_key: str, ndays: int = 1) -> dict:
@@ -243,9 +127,6 @@ def get_station_data(station_key: str, ndays: int = 1) -> dict:
                 }
                 for item in data.get("items", [])
             ]
-        #else:  # Shoothill
-        #    dataset = fetch_shoothill_data(station["id"], ndays=ndays)
-        #    readings = parse_shoothill_data(dataset)
         
         if not readings:
             return {
