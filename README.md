@@ -1,11 +1,10 @@
 # DeeRiverLevels
 
-### [Click here for table](https://jpolton.github.io/DeeRiverLevels/index.html)
-
-Haven't managed to get this working on GitHub. Works locally...
+### [Click here for graph: ](https://jpolton.github.io/DeeRiverLevels/index.html)
 
 
-Useage (locally tested only):
+
+Useage (when running locally on branch local-server):
 
 conda activate weir_waterlevel_web_env
 
