@@ -161,6 +161,37 @@
     a {
       color: #93c5fd;
     }
+
+    .references {
+      padding: 16px;
+      border-top: 1px solid #1f2937;
+      margin-top: 16px;
+      background: #0b1220;
+    }
+
+    .references h2 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    .references ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .references li {
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 4px;
+    }
+
+    .references .ref-text {
+      font-weight: 500;
+    }
   </style>
 </head>
 
@@ -197,6 +228,44 @@
       <div id="chart"></div>
     </main>
   </div>
+
+  <section class="references">
+    <h2>References</h2>
+    <ul>
+      <li>
+        <span class="ref-text">Environment Agency Flood Monitoring API</span>
+        <a href="https://environment.data.gov.uk/flood-monitoring/doc/reference" target="_blank">EA API
+          Documentation</a>
+      </li>
+      <li>
+        <span class="ref-text">Natural Resources Wales API Portal</span>
+        <a href="https://rivers-and-seas.naturalresources.wales/?lang=en" target="_blank">NRW river levels portal</a>
+      </li>
+      <li>
+        <span class="ref-text">Typical Ranges for river levels</span>
+        <a href="https://riverlevels.uk/dee-holt-community-farndon-dee/" target="_blank">riverlevels.uk - Farndon</a>
+      </li>
+      <li>
+        <span class="ref-text">Farndon</span>
+        <a href="https://rivers-and-seas.naturalresources.wales/Station/4170?parameterType=1" target="_blank">Farndon
+          (source: NRW)</a>
+      </li>
+      <li>
+        <span class="ref-text">Ironbridge</span>
+        <a href="https://rivers-and-seas.naturalresources.wales/Station/4173?parameterType=1" target="_blank">Ironbridge
+          (source: NRW)</a>
+      </li>
+      <li>
+        <span class="ref-text">Chester</span>
+        <a href="https://environment.data.gov.uk/flood-monitoring/id/stations/067033_TG_148/readings?latest"
+          target="_blank">Chester (latest) source: EA</a>
+      </li>
+      <li>
+        <span class="ref-text">Typical Ranges for river levels</span>
+        <a href="https://riverlevels.uk/dee-holt-community-farndon-dee/" target="_blank">riverlevels.uk - Farndon</a>
+      </li>
+    </ul>
+  </section>
 
   <footer>
     Station keys & names mirror your Flask app’s <code>STATIONS</code> mapping.
