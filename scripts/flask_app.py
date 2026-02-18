@@ -26,7 +26,7 @@ STATIONS = {
         "name": "Southend",
         "source": "EA",
         "description": "Environment Agency monitoring station"
-        # The weir has an id: https://environment.data.gov.uk/flood-monitoring/id/stations/7386
+        # Should check the id: https://environment.data.gov.uk/flood-monitoring/id/stations/0019
     },
     "Teddington_Lock": {
         "id": "3401TH",
@@ -40,10 +40,10 @@ STATIONS = {
         "source": "EA",
         "description": "Environment Agency monitoring station",
         "parameter_id": 41
-        #  EA data on Charlton (does it work?): https://environment.data.gov.uk/flood-monitoring/id/stations/7390
+        #  EA data on Charlton. Should check: https://environment.data.gov.uk/flood-monitoring/id/stations/0003
     },
     "Staines": {
-        "id": "2900TH",
+        "id": "2900TH", # Should check
         "name": "Staines",
         "source": "EA",
         "description": "Environment Agency monitoring station",
@@ -56,8 +56,6 @@ STATIONS = {
         "description": "Environment Agency monitoring station"
     }
 }
-# Extra EA data on Finchett's Gutter etc: https://environment.data.gov.uk/flood-monitoring/id/stations?lat=53.1899&long=-2.8853&dist=10
-
 
 def fetch_station_data(station_id: str, ndays: int = 1) -> dict:
     """Fetch readings from Environment Agency flood monitoring API, for the last `ndays` days"""
