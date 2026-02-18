@@ -5,8 +5,8 @@ db_to_json.py — Export SQLite timeseries data to JSON files (one per station).
 Reads from timeseries.sqlite and creates/updates JSON files in docs/data/
 matching the existing format:
 {
-  "station_key": "Southend",
-  "station_name": "Southend",
+  "station_key": "Charlton",
+  "station_name": "Charlton",
   "source": "EA",
   "generated_at": "2026-02-10T22:05:48.272602+00:00",
   "data": [

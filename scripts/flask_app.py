@@ -51,11 +51,11 @@ STATIONS = {
         "parameter_id": 41
         #  EA data on Charlton (does it work?): https://environment.data.gov.uk/flood-monitoring/id/stations/7390
     },
-    "farndon": {
-        "id": "4170", #NRW:4170 Shoothill:972,
-        "name": "Farndon",
-        "source": "NRW",
-        "description": "Natural Resources Wales monitoring station",
+    "Staines": {
+        "id": "7213",
+        "name": "Staines",
+        "source": "EA",
+        "description": "Environment Agency monitoring station",
         "parameter_id": 40
     },
     "queens_park": {
