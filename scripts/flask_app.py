@@ -58,9 +58,9 @@ STATIONS = {
         "description": "Environment Agency monitoring station",
         "parameter_id": 40
     },
-    "queens_park": {
-        "id": "SJ46_109", #EA:SJ46_109 Shoothill:10831,
-        "name": "Queens Park ground water level",
+    "Hammersmith": {
+        "id": "7392",
+        "name": "Hammersmith",
         "source": "EA",
         "description": "Environment Agency monitoring station"
     }

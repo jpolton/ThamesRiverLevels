@@ -281,7 +281,7 @@
       { key: "Teddington_Lock", name: "Teddington_Lock", color: "orange" },
       { key: "Charlton", name: "Charlton", color: "green", typicalrange: [4.38, 6.06] },
       { key: "Staines", name: "Staines", color: "blue", typicalrange: [4.57, 8.36] },
-      { key: "queens_park", name: "Queens Park ground water level", color: "purple" }
+      { key: "Hammersmith", name: "Hammersmith", color: "purple" }
     ];
 
     // Data cache: { key -> {generated_at, rows:[{ts_utc,value}], ready:true} }
@@ -431,7 +431,7 @@
         const stationName = station?.name || key;
         const stationColor = station?.color;
 
-        const isGroundwater = key === "queens_park";
+        const isGroundwater = key === "Hammersmith";
         const isTeddington_Lock = key === "Teddington_Lock";
 
         const trace = {
