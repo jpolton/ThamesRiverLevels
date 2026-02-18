@@ -43,13 +43,13 @@ STATIONS = {
         "source": "EA",
         "description": "Environment Agency monitoring station"
     },
-    "ironbridge": {
+    "Charlton": {
         "id": "4173", #NRW:4273 Shoothill:968,
-        "name": "Ironbridge",
+        "name": "Charlton",
         "source": "NRW",
         "description": "Natural Resources Wales monitoring station",
         "parameter_id": 41
-        # Addtional, EA, data on IronBridge (doesn't seem to work): https://environment.data.gov.uk/flood-monitoring/id/stations/067027_TG_127/stageScale
+        # Addtional, EA, data on Charlton (doesn't seem to work): https://environment.data.gov.uk/flood-monitoring/id/stations/067027_TG_127/stageScale
     },
     "farndon": {
         "id": "4170", #NRW:4170 Shoothill:972,
