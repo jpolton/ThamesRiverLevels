@@ -30,12 +30,12 @@ app = Flask(__name__, template_folder='docs')
 
 # Station definitions.
 STATIONS = {
-    "chester": {
-        "id": "067033_TG_148",
-        "name": "Chester",
+    "Southend": {
+        "id": "7386",
+        "name": "Southend",
         "source": "EA",
         "description": "Environment Agency monitoring station"
-        # The weir has an id: https://environment.data.gov.uk/flood-monitoring/id/stations/067033 but it doesn't seem to have any data
+        # The weir has an id: https://environment.data.gov.uk/flood-monitoring/id/stations/7386
     },
     "liverpool": {
         "id": "E70124",

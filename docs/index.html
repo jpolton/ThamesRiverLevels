@@ -257,9 +257,9 @@
           (source: NRW)</a>
       </li>
       <li>
-        <span class="ref-text">Chester</span>
-        <a href="https://environment.data.gov.uk/flood-monitoring/id/stations/067033_TG_148/readings?latest"
-          target="_blank">Chester (latest) source: EA</a>
+        <span class="ref-text">Southend</span>
+        <a href="https://environment.data.gov.uk/flood-monitoring/id/stations/7386/readings?latest"
+          target="_blank">Southend (latest) source: EA</a>
       </li>
       <li>
         <span class="ref-text">Source code</span>
@@ -276,7 +276,7 @@
     // --- Station config (mirrors flask_app.py) ---  
     // Source of typical ranges: riverlevels.uk 
     const STATIONS = [
-      { key: "chester", name: "Chester", color: "red" },
+      { key: "Southend", name: "Southend", color: "red" },
       { key: "liverpool", name: "Liverpool", color: "orange" },
       { key: "ironbridge", name: "Ironbridge", color: "green", typicalrange: [4.38, 6.06] },
       { key: "farndon", name: "Farndon", color: "blue", typicalrange: [4.57, 8.36] },
@@ -504,7 +504,7 @@
           domain: isMobile ? [0.08, 0.92] : [0.12, 0.94]
         },
         yaxis1: {
-          title: { text: 'Chester, Ironbridge, Farndon River Level (m)' },
+          title: { text: 'Southend, Ironbridge, Farndon River Level (m)' },
           side: 'left',
           anchor: 'x'
         },
