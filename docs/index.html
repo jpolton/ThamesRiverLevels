@@ -278,7 +278,7 @@
     // Source of typical ranges: riverlevels.uk 
     const STATIONS = [
       { key: "Southend", name: "Southend", color: "red" },
-      { key: "liverpool", name: "Liverpool", color: "orange" },
+      { key: "Teddington_Lock", name: "Teddington_Lock", color: "orange" },
       { key: "Charlton", name: "Charlton", color: "green", typicalrange: [4.38, 6.06] },
       { key: "Staines", name: "Staines", color: "blue", typicalrange: [4.57, 8.36] },
       { key: "queens_park", name: "Queens Park ground water level", color: "purple" }
@@ -432,7 +432,7 @@
         const stationColor = station?.color;
 
         const isGroundwater = key === "queens_park";
-        const isLiverpool = key === "liverpool";
+        const isTeddington_Lock = key === "Teddington_Lock";
 
         const trace = {
           x: regular.map(p => p.t),
@@ -444,7 +444,7 @@
 
         if (isGroundwater) {
           trace.yaxis = 'y2';
-        } else if (isLiverpool) {
+        } else if (isTeddington_Lock) {
           trace.yaxis = 'y3';
         } else {
           trace.yaxis = 'y1';
@@ -519,7 +519,7 @@
           anchor: 'x'
         },
         yaxis3: {
-          title: { text: 'Liverpool (m)' },
+          title: { text: 'Teddington_Lock (m)' },
           side: 'left',
           overlaying: 'y1',
           anchor: 'free',

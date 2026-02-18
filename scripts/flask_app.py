@@ -37,9 +37,9 @@ STATIONS = {
         "description": "Environment Agency monitoring station"
         # The weir has an id: https://environment.data.gov.uk/flood-monitoring/id/stations/7386
     },
-    "liverpool": {
-        "id": "E70124",
-        "name": "Liverpool",
+    "Teddington_Lock": {
+        "id": "7268",
+        "name": "Teddington_Lock",
         "source": "EA",
         "description": "Environment Agency monitoring station"
     },
