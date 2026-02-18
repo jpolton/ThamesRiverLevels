@@ -16,15 +16,6 @@ import json
 import sys
 import os
 
-# NRW API import
-
-
-try:
-    # Add parent directory to path to find nrw_api if running as script
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from nrw_api.nrw_api import fetch_historical_data
-except Exception as e:
-    print(f"Warning: NRW API not available ({e}). NRW stations will not work.")
 
 app = Flask(__name__, template_folder='docs')
 
@@ -110,16 +101,6 @@ def get_station_data(station_key: str, ndays: int = 1) -> dict:
     try:
         if station["source"] == "EA":
             data = fetch_station_data(station["id"], ndays=ndays)
-            readings = [
-                {
-                    "dateTime": item["dateTime"],
-                    "value": item["value"]
-                }
-                for item in data.get("items", [])
-            ]
-        elif station["source"] == "NRW":
-            parameter_id = station.get("parameter_id", 41) # Default to 41 if not specified
-            data = fetch_historical_data(station["id"], ndays=ndays, parameter=parameter_id)
             readings = [
                 {
                     "dateTime": item["dateTime"],
