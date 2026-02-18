@@ -44,12 +44,12 @@ STATIONS = {
         "description": "Environment Agency monitoring station"
     },
     "Charlton": {
-        "id": "4173", #NRW:4273 Shoothill:968,
+        "id": "7390", 
         "name": "Charlton",
-        "source": "NRW",
-        "description": "Natural Resources Wales monitoring station",
+        "source": "EA",
+        "description": "Environment Agency monitoring station",
         "parameter_id": 41
-        # Addtional, EA, data on Charlton (doesn't seem to work): https://environment.data.gov.uk/flood-monitoring/id/stations/067027_TG_127/stageScale
+        #  EA data on Charlton (does it work?): https://environment.data.gov.uk/flood-monitoring/id/stations/7390
     },
     "farndon": {
         "id": "4170", #NRW:4170 Shoothill:972,
