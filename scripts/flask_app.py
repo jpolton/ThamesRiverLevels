@@ -31,20 +31,20 @@ app = Flask(__name__, template_folder='docs')
 # Station definitions.
 STATIONS = {
     "Southend": {
-        "id": "7386",
+        "id": "0019",
         "name": "Southend",
         "source": "EA",
         "description": "Environment Agency monitoring station"
         # The weir has an id: https://environment.data.gov.uk/flood-monitoring/id/stations/7386
     },
     "Teddington_Lock": {
-        "id": "7268",
+        "id": "3401TH",
         "name": "Teddington_Lock",
         "source": "EA",
         "description": "Environment Agency monitoring station"
     },
     "Charlton": {
-        "id": "7390", 
+        "id": "0003", 
         "name": "Charlton",
         "source": "EA",
         "description": "Environment Agency monitoring station",
@@ -52,14 +52,14 @@ STATIONS = {
         #  EA data on Charlton (does it work?): https://environment.data.gov.uk/flood-monitoring/id/stations/7390
     },
     "Staines": {
-        "id": "7213",
+        "id": "2900TH",
         "name": "Staines",
         "source": "EA",
         "description": "Environment Agency monitoring station",
         "parameter_id": 40
     },
     "Hammersmith": {
-        "id": "7392",
+        "id": "0010",
         "name": "Hammersmith",
         "source": "EA",
         "description": "Environment Agency monitoring station"
