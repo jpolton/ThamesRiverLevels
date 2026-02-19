@@ -4,3 +4,4 @@ config_keys.py
 shoothill_api.cpython*.pyc
 config_keys.cpython*.pyc
 data/timeseries.sqlite
+.DS_Store
