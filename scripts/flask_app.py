@@ -16,8 +16,17 @@ import json
 import sys
 import os
 
-
-app = Flask(__name__, template_folder='docs')
+# Get the directory of the current script
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# The project root is one level up from the scripts directory
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+# The docs folder is at the project root
+TEMPLATE_DIR = os.path.join(PROJECT_ROOT, 'docs')
+#app = Flask(__name__, template_folder='docs')
+app = Flask(__name__, 
+            template_folder=TEMPLATE_DIR,
+            static_folder=TEMPLATE_DIR,
+            static_url_path='')
 
 # Station definitions.
 STATIONS = {

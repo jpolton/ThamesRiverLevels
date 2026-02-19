@@ -16,6 +16,7 @@ matching the existing format:
 }
 
 Usage:
+  cd scripts
   python db_to_json.py --db ../docs/data/timeseries.sqlite --output-dir ../docs/data
   python db_to_json.py  # uses defaults
 

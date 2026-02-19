@@ -8,6 +8,7 @@ db_updater.py — Persist last-7-days time series for STATIONS into SQLite.
 - Can run once (for cron) or loop every 15 minutes
 
 Usage:
+  cd scripts
   python db_updater.py --db ../docs/data/timeseries.sqlite --once --days 7 --log-file test_update.log
   python db_updater.py --db ../docs/data/timeseries.sqlite --loop --days 7
   python db_updater.py --db ../docs/data/timeseries.sqlite --backfill-days 7 --once
