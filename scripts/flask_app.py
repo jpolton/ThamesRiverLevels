@@ -34,39 +34,42 @@ STATIONS = {
         "id": "0019",
         "name": "Southend",
         "source": "EA",
-        "description": "Environment Agency monitoring station"
-        # Should check the id: https://environment.data.gov.uk/flood-monitoring/id/stations/0019
+        "description": "Environment Agency monitoring station",
+        "qualifier": "Tidal Level"
     },
     "Teddington_Lock": {
         "id": "3401TH",
         "name": "Teddington_Lock",
         "source": "EA",
-        "description": "Environment Agency monitoring station"
+        "description": "Environment Agency monitoring station",
+        "qualifier": "Stage"
     },
     "Charlton": {
         "id": "0003", 
         "name": "Charlton",
         "source": "EA",
         "description": "Environment Agency monitoring station",
+        "qualifier": "Tidal Level",
         "parameter_id": 41
-        #  EA data on Charlton. Should check: https://environment.data.gov.uk/flood-monitoring/id/stations/0003
     },
     "Staines": {
         "id": "2900TH", # Should check
         "name": "Staines",
         "source": "EA",
         "description": "Environment Agency monitoring station",
+        "qualifier": "Stage",
         "parameter_id": 40
     },
     "Hammersmith": {
         "id": "0010",
         "name": "Hammersmith",
         "source": "EA",
-        "description": "Environment Agency monitoring station"
+        "description": "Environment Agency monitoring station",
+        "qualifier": "Tidal Level"
     }
 }
 
-def fetch_station_data(station_id: str, ndays: int = 1) -> dict:
+def fetch_station_data(station_id: str, ndays: int = 1, qualifier: str = None) -> dict:
     """Fetch readings from Environment Agency flood monitoring API, for the last `ndays` days"""
     url = f"https://environment.data.gov.uk/flood-monitoring/id/stations/{station_id}/readings"
     #if ndays == 1:
@@ -86,6 +89,8 @@ def fetch_station_data(station_id: str, ndays: int = 1) -> dict:
     # Use full ISO timestamp for enddate to capture all available data
     #params = {"startdate": py_dt_start.strftime('%Y-%m-%d'), "enddate": py_dt_end.strftime('%Y-%m-%d')}
     params = {"since": py_dt_start.strftime('%Y-%m-%dT00:00:00Z'), "_limit": 800}
+    if qualifier:
+        params["qualifier"] = qualifier
     try:
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -107,7 +112,7 @@ def get_station_data(station_key: str, ndays: int = 1) -> dict:
     
     try:
         if station["source"] == "EA":
-            data = fetch_station_data(station["id"], ndays=ndays)
+            data = fetch_station_data(station["id"], ndays=ndays, qualifier=station.get("qualifier"))
             readings = [
                 {
                     "dateTime": item["dateTime"],
