@@ -1,1 +1,1 @@
-{"station_key": "Charlton", "station_name": "Charlton", "source": "EA", "generated_at": "2026-08-26T04:32:59.180219+00:00", "data": [{"ts_utc": 1787114700, "value": 3.121}, {"ts_utc": 1787115600, "value": 3.267}, {"ts_utc": 1787116500, "value": 3.354}, {"ts_utc": 1787117400, "value": 3.369}, {"ts_utc": 1787118300, "value": 3.349}]}
+{"station_key": "Charlton", "station_name": "Charlton", "source": "EA", "generated_at": "2026-08-26T05:27:19.155198+00:00", "data": [{"ts_utc": 1787117400, "value": 3.369}, {"ts_utc": 1787118300, "value": 3.349}]}
